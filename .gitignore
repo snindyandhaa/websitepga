@@ -1,0 +1,20 @@
+# Dependencies
+/backend/vendor/
+/frontend/node_modules/
+/frontend/.nuxt/
+/frontend/.output/
+
+# Environment files
+.env
+/backend/.env
+/frontend/.env
+
+# IDE / Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db

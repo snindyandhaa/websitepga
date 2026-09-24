@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: laravel_backend
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./backend:/var/www
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nuxt_frontend
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.nuxt
+    ports:
+      - "3000:3000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3000
