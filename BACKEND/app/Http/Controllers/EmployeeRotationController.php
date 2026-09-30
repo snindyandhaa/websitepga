@@ -2,64 +2,60 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\EmployeeRotation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class EmployeeRotationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    private $spreadsheetId = '1YQSq9tFrGZmm7Z1x_8zn5yY7qeM2EmHNxSjJT4vj5UQ';
+    private $gidMutasi = '484819291';
+
     public function index()
     {
-        //
-    }
+        $targetUrl = "https://docs.google.com/spreadsheets/d/{$this->spreadsheetId}/export?format=csv&gid={$this->gidMutasi}";
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+        try {
+            $response = Http::withHeaders([
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+            ])->get($targetUrl);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+            if (!$response->successful()) {
+                return response()->json(['message' => 'Gagal mengambil data mutasi'], 500);
+            }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(EmployeeRotation $employeeRotation)
-    {
-        //
-    }
+            $csvText = $response->body();
+            $csvText = preg_replace('/^\xEF\xBB\xBF/', '', $csvText);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(EmployeeRotation $employeeRotation)
-    {
-        //
-    }
+            $lines = array_filter(explode("\n", str_replace("\r", "", $csvText)));
+            if (count($lines) < 2) return response()->json([]);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, EmployeeRotation $employeeRotation)
-    {
-        //
-    }
+            $rawHeaders = array_shift($lines);
+            $headers = array_map('trim', str_getcsv($rawHeaders));
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(EmployeeRotation $employeeRotation)
-    {
-        //
+            $dataList = [];
+            foreach ($lines as $line) {
+                if (trim($line) === '') continue;
+                $rowValues = str_getcsv($line);
+                $rowObj = [];
+                $hasData = false;
+
+                foreach ($headers as $idx => $header) {
+                    if ($header) {
+                        $val = isset($rowValues[$idx]) ? trim($rowValues[$idx]) : '';
+                        $rowObj[$header] = $val;
+                        if ($val !== '') $hasData = true;
+                    }
+                }
+
+                if ($hasData) {
+                    $dataList[] = $rowObj;
+                }
+            }
+
+            return response()->json($dataList);
+
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
     }
 }

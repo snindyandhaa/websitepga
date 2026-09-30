@@ -1,13 +1,17 @@
 import { defineEventHandler, getQuery, createError } from 'h3'
 
+export interface KaryawanItem {
+  [key: string]: string
+}
+
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const sheet = (query.sheet as string) || 'all'
 
-  // ID Google Sheets Resmi
+  // ID Spreadsheet Google
   const sheetId = '1YQSq9tFrGZmm7Z1x_8zn5yY7qeM2EmHNxSjJT4vj5UQ'
 
-  // Mapping GID Google Sheets sesuai tab
+  // Menentukan gid sheet berdasarkan query
   let gid = '0'
   if (sheet === 'sulawesi') {
     gid = '1627431459'
@@ -15,26 +19,79 @@ export default defineEventHandler(async (event) => {
     gid = '936973334'
   }
 
+  // URL Export CSV resmi dari Google Sheets
   const targetUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`
 
   try {
     const response = await fetch(targetUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-      },
-      redirect: 'follow'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+      }
     })
 
     if (!response.ok) {
-      throw new Error(`Google Sheets merespon status: ${response.status}`)
+      throw new Error(`Google Sheets error status: ${response.status} ${response.statusText}`)
     }
 
-    const csvData = await response.text()
-    return csvData
+    let csvText = await response.text()
+
+    // Hapus BOM UTF-8 jika ada
+    if (csvText.startsWith('\uFEFF')) {
+      csvText = csvText.slice(1)
+    }
+
+    // Fungsi Parser CSV Presisi
+    const parseCSVLine = (line: string): string[] => {
+      const result: string[] = []
+      let current = ''
+      let inQuotes = false
+
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i]
+        if (char === '"') {
+          inQuotes = !inQuotes
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim().replace(/^"|"$/g, '').trim())
+          current = ''
+        } else {
+          current += char
+        }
+      }
+      result.push(current.trim().replace(/^"|"$/g, '').trim())
+      return result
+    }
+
+    const lines: string[] = csvText.split(/\r?\n/).filter((line: string) => line.trim() !== '')
+    if (lines.length < 2) return []
+
+    // Bersihkan header
+    const headers: string[] = parseCSVLine(lines[0] ?? '').map(h => h.replace(/^\uFEFF/, '').trim())
+    const dataList: KaryawanItem[] = []
+
+    for (let i = 1; i < lines.length; i++) {
+      const values: string[] = parseCSVLine(lines[i] ?? '')
+      const rowObj: KaryawanItem = {}
+      let hasData = false
+
+      headers.forEach((header: string, index: number) => {
+        if (header) {
+          const val = values[index] ?? ''
+          const cleanVal = val.trim()
+          rowObj[header] = cleanVal
+          if (cleanVal !== '') hasData = true
+        }
+      })
+
+      if (hasData) {
+        dataList.push(rowObj)
+      }
+    }
+
+    return dataList
   } catch (error: any) {
     throw createError({
       statusCode: 500,
-      statusMessage: `Gagal mengambil data visualisasi: ${error.message}`
+      statusMessage: error.message || 'Gagal memproses data dari Google Sheets'
     })
   }
 })

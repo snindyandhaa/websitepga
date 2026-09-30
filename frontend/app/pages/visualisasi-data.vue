@@ -10,7 +10,7 @@
 
       <nav class="nav-menu">
         <div class="dropdown">
-          <button>Data MP ▾</button>
+          <button class="dropdown-btn">Data MP ▾</button>
           <div class="dropdown-content">
             <NuxtLink to="/data-karyawan">Data Karyawan</NuxtLink>
             <NuxtLink to="/visualisasi-data">Visualisasi Data</NuxtLink>
@@ -19,7 +19,7 @@
         </div>
 
         <div class="dropdown">
-          <button>General Affair Asset ▾</button>
+          <button class="dropdown-btn">General Affair Asset ▾</button>
           <div class="dropdown-content">
             <NuxtLink to="/asset-car">Asset Car</NuxtLink>
             <NuxtLink to="/asset-pga">Asset PGA</NuxtLink>
@@ -27,7 +27,7 @@
         </div>
 
         <div class="dropdown">
-          <button>Asuransi ▾</button>
+          <button class="dropdown-btn">Asuransi ▾</button>
           <div class="dropdown-content">
             <NuxtLink to="/reliance">Reliance</NuxtLink>
             <NuxtLink to="/bpjs">BPJS</NuxtLink>
@@ -35,16 +35,16 @@
         </div>
 
         <div class="dropdown">
-          <button>Recruitment ▾</button>
+          <button class="dropdown-btn">Recruitment ▾</button>
           <div class="dropdown-content">
             <NuxtLink to="/data-summary">Data Summary</NuxtLink>
           </div>
         </div>
 
         <div class="dropdown">
-          <button>More ▾</button>
+          <button class="dropdown-btn">More ▾</button>
           <div class="dropdown-content">
-            <NuxtLink to="/WIPHRA">Work In Progress HR Area</NuxtLink>
+            <NuxtLink to="/WIPHRA">Work In Progress HC & GA</NuxtLink>
             <NuxtLink to="/budget-department">Budget Department</NuxtLink>
           </div>
         </div>
@@ -108,46 +108,40 @@
       <template v-else>
         <!-- TAB 1: DATA COMPANY -->
         <div v-if="activeTab === 'company'" class="chart-group">
-          <div class="chart-card">
-            <h2>Company</h2>
-            <div class="chart-box">
-              <Bar v-if="chartType === 'bar'" :data="getChartData('Company')" :options="barOptions" />
-              <Pie v-else :data="getChartData('Company')" :options="pieOptions" />
+          <div v-for="col in ['Company', 'Divisi', 'Generation']" :key="col" class="chart-card">
+            <!-- Header Judul + Keterangan Kecil di Atas -->
+            <div class="chart-card-header">
+              <h2>{{ col === 'Divisi' ? 'Division' : col }}</h2>
+              <div class="chart-meta-info">
+                <span>Total: <strong>{{ getSummaryStats(col).total }} Orang</strong></span>
+                <span class="dot">•</span>
+                <span>Terbanyak: <strong>{{ getSummaryStats(col).topCategory }} ({{ getSummaryStats(col).topCount }})</strong></span>
+              </div>
             </div>
-          </div>
 
-          <div class="chart-card">
-            <h2>Division</h2>
             <div class="chart-box">
-              <Bar v-if="chartType === 'bar'" :data="getChartData('Divisi')" :options="barOptions" />
-              <Pie v-else :data="getChartData('Divisi')" :options="pieOptions" />
-            </div>
-          </div>
-
-          <div class="chart-card">
-            <h2>Generation</h2>
-            <div class="chart-box">
-              <Bar v-if="chartType === 'bar'" :data="getChartData('Generation')" :options="barOptions" />
-              <Pie v-else :data="getChartData('Generation')" :options="pieOptions" />
+              <Bar v-if="chartType === 'bar'" :data="getChartData(col)" :options="barOptions" />
+              <Pie v-else :data="getChartData(col)" :options="pieOptions" />
             </div>
           </div>
         </div>
 
         <!-- TAB 2: DATA MASA BAKTI -->
         <div v-if="activeTab === 'masabakti'" class="chart-group">
-          <div class="chart-card">
-            <h2>Masa Bakti</h2>
-            <div class="chart-box">
-              <Bar v-if="chartType === 'bar'" :data="getChartData('Masa Bakti')" :options="barOptions" />
-              <Pie v-else :data="getChartData('Masa Bakti')" :options="pieOptions" />
+          <div v-for="col in ['Masa Bakti', 'Level']" :key="col" class="chart-card">
+            <!-- Header Judul + Keterangan Kecil di Atas -->
+            <div class="chart-card-header">
+              <h2>{{ col }}</h2>
+              <div class="chart-meta-info">
+                <span>Total: <strong>{{ getSummaryStats(col).total }} Orang</strong></span>
+                <span class="dot">•</span>
+                <span>Terbanyak: <strong>{{ getSummaryStats(col).topCategory }} ({{ getSummaryStats(col).topCount }})</strong></span>
+              </div>
             </div>
-          </div>
 
-          <div class="chart-card">
-            <h2>Level</h2>
             <div class="chart-box">
-              <Bar v-if="chartType === 'bar'" :data="getChartData('Level')" :options="barOptions" />
-              <Pie v-else :data="getChartData('Level')" :options="pieOptions" />
+              <Bar v-if="chartType === 'bar'" :data="getChartData(col)" :options="barOptions" />
+              <Pie v-else :data="getChartData(col)" :options="pieOptions" />
             </div>
           </div>
         </div>
@@ -155,18 +149,19 @@
         <!-- TAB 3: DATA EDUCATION -->
         <div v-if="activeTab === 'education'" class="chart-group">
           <div class="chart-card">
-            <h2>Education</h2>
+            <!-- Header Judul + Keterangan Kecil di Atas -->
+            <div class="chart-card-header">
+              <h2>Education</h2>
+              <div class="chart-meta-info">
+                <span>Total: <strong>{{ getSummaryStats('Education').total }} Orang</strong></span>
+                <span class="dot">•</span>
+                <span>Terbanyak: <strong>{{ getSummaryStats('Education').topCategory }} ({{ getSummaryStats('Education').topCount }})</strong></span>
+              </div>
+            </div>
+
             <div class="chart-box">
               <Bar v-if="chartType === 'bar'" :data="getChartData('Education')" :options="barOptions" />
               <Pie v-else :data="getChartData('Education')" :options="pieOptions" />
-            </div>
-          </div>
-
-          <div class="chart-card">
-            <h2>Major</h2>
-            <div class="chart-box">
-              <Bar v-if="chartType === 'bar'" :data="getChartData('Major')" :options="barOptions" />
-              <Pie v-else :data="getChartData('Major')" :options="pieOptions" />
             </div>
           </div>
         </div>
@@ -186,12 +181,14 @@ import {
   BarElement,
   ArcElement,
   CategoryScale,
-  LinearScale
+  LinearScale,
+  type ChartData,
+  type ChartOptions
 } from 'chart.js'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, ArcElement, CategoryScale, LinearScale)
 
-type KaryawanRow = Record<string, any>
+export type KaryawanRow = Record<string, string>
 
 const activeTab = ref<'company' | 'masabakti' | 'education'>('company')
 const chartType = ref<'bar' | 'pie'>('bar')
@@ -201,19 +198,20 @@ const errorMessage = ref<string>('')
 
 const karyawanList = ref<KaryawanRow[]>([])
 
+// WARNA-WARNI UNTUK DIAGRAM & BAR CHART
 const chartColors: string[] = [
-  '#0d1b7a', '#2563eb', '#3b82f6', '#60a5fa', 
-  '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', 
-  '#ec4899', '#06b6d4', '#64748b', '#a855f7'
+  '#2563eb', '#10b981', '#f59e0b', '#ef4444', 
+  '#8b5cf6', '#06b6d4', '#ec4899', '#6366f1', 
+  '#14b8a6', '#f97316', '#84cc16', '#a855f7',
+  '#64748b', '#0284c7', '#d97706', '#dc2626'
 ]
 
-const barOptions: any = {
+const barOptions: ChartOptions<'bar'> = {
   responsive: true,
   maintainAspectRatio: false,
-  indexAxis: 'y' as const,
+  indexAxis: 'y',
   plugins: {
-    legend: { display: false },
-    datalabels: { display: false }
+    legend: { display: false }
   },
   scales: {
     x: { beginAtZero: true },
@@ -221,17 +219,17 @@ const barOptions: any = {
   }
 }
 
-const pieOptions: any = {
+const pieOptions: ChartOptions<'pie'> = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: {
       display: true,
-      position: 'right' as const,
+      position: 'right',
       labels: {
         generateLabels: (chart: any) => {
           const data = chart.data
-          if (data.labels.length && data.datasets.length) {
+          if (data.labels?.length && data.datasets?.length) {
             return data.labels.map((label: string, i: number) => {
               const value = data.datasets[0].data[i]
               const meta = chart.getDatasetMeta(0)
@@ -241,7 +239,7 @@ const pieOptions: any = {
                 fillStyle: style.backgroundColor,
                 strokeStyle: style.borderColor,
                 lineWidth: style.borderWidth,
-                hidden: !chart.isDatasetVisible(0) || meta.data[i].hidden,
+                hidden: !chart.isDatasetVisible(0) || meta.data[i]?.hidden,
                 index: i
               }
             })
@@ -249,8 +247,7 @@ const pieOptions: any = {
           return []
         }
       }
-    },
-    datalabels: { display: false }
+    }
   }
 }
 
@@ -271,13 +268,13 @@ const parseCsvLine = (text: string): string[] => {
     if (char === '"') {
       inQuotes = !inQuotes
     } else if (char === ',' && !inQuotes) {
-      result.push(entry.replace(/^"|"$/g, ''))
+      result.push(entry.replace(/^"|"$/g, '').trim())
       entry = ''
     } else {
       entry += char
     }
   }
-  result.push(entry.replace(/^"|"$/g, ''))
+  result.push(entry.replace(/^"|"$/g, '').trim())
   return result
 }
 
@@ -310,22 +307,26 @@ const loadKaryawanData = async (): Promise<void> => {
     const csvText = await $fetch<string>(csvUrl, { responseType: 'text' })
 
     if (!csvText || csvText.includes('<!DOCTYPE html>')) {
-      throw new Error('Gagal mengambil data dari Google Sheets. Pastikan spreadsheet publik.')
+      throw new Error('Gagal mengambil data dari Google Sheets. Pastikan Spreadsheet disetel Publik.')
     }
 
-    const lines = csvText.split('\n').map(l => l.replace('\r', ''))
+    let cleanCsv = csvText
+    if (cleanCsv.startsWith('\uFEFF')) {
+      cleanCsv = cleanCsv.slice(1)
+    }
+
+    const lines = cleanCsv.split(/\r?\n/).filter(l => l.trim() !== '')
     if (lines.length < 2) {
       karyawanList.value = []
       return
     }
 
     const rawHeaders = lines.shift() || ''
-    const headers = parseCsvLine(rawHeaders).map(h => h.trim())
+    const headers = parseCsvLine(rawHeaders).map(h => h.replace(/^\uFEFF/, '').trim())
 
     const parsedData: KaryawanRow[] = []
 
     lines.forEach(line => {
-      if (line.trim() === '') return
       const rowValues = parseCsvLine(line)
       const item: KaryawanRow = {}
       
@@ -354,7 +355,7 @@ onMounted(() => {
   loadKaryawanData()
 })
 
-const getChartData = (columnName: string): any => {
+const getChartData = (columnName: string): ChartData<'bar' | 'pie'> => {
   const counts: Record<string, number> = {}
 
   karyawanList.value.forEach(item => {
@@ -369,18 +370,44 @@ const getChartData = (columnName: string): any => {
     counts[rawVal] = (counts[rawVal] ?? 0) + 1
   })
 
-  const sortedKeys = Object.keys(counts).sort((a, b) => (counts[b] || 0) - (counts[a] || 0))
+  // URUTKAN DESCENDING (TERBANYAK -> TERKECIL)
+  const sortedKeys = Object.keys(counts).sort((a, b) => (counts[b] ?? 0) - (counts[a] ?? 0))
 
   return {
     labels: sortedKeys,
     datasets: [
       {
         label: 'Jumlah Karyawan',
-        data: sortedKeys.map(key => counts[key] || 0),
-        backgroundColor: chartType.value === 'bar' ? '#0d1b7a' : chartColors.slice(0, sortedKeys.length),
+        data: sortedKeys.map(key => counts[key] ?? 0),
+        backgroundColor: chartColors.slice(0, sortedKeys.length),
         borderRadius: chartType.value === 'bar' ? 6 : 0
       }
     ]
+  }
+}
+
+// MENGHITUNG KETERANGAN RINGKAS ATAS
+const getSummaryStats = (columnName: string) => {
+  const counts: Record<string, number> = {}
+  let total = 0
+
+  karyawanList.value.forEach(item => {
+    let rawVal = getPropertyValue(item, columnName)
+    if (columnName.toLowerCase().includes('masabakti') || columnName.toLowerCase().includes('masa bakti')) {
+      if (rawVal !== 'Tidak Terdata' && !rawVal.toLowerCase().includes('tahun')) {
+        rawVal = `${rawVal} Tahun`
+      }
+    }
+    counts[rawVal] = (counts[rawVal] ?? 0) + 1
+    total++
+  })
+
+  const sortedKeys = Object.keys(counts).sort((a, b) => (counts[b] ?? 0) - (counts[a] ?? 0))
+
+  return {
+    total,
+    topCategory: sortedKeys[0] || '-',
+    topCount: counts[sortedKeys[0] || ''] || 0
   }
 }
 </script>
@@ -389,6 +416,7 @@ const getChartData = (columnName: string): any => {
 .visual-container {
   background-color: #f8fafc;
   min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Navbar Style */
@@ -396,26 +424,78 @@ const getChartData = (columnName: string): any => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 40px;
+  padding: 12px 48px;
   background-color: #ffffff;
-  border-bottom: 1px solid #ddd;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
-.nav-logo { height: 45px; }
-.nav-menu { display: flex; gap: 15px; }
-.dropdown { position: relative; }
-.dropdown button { background: none; border: none; font-size: 13px; cursor: pointer; color: #333; }
+
+.nav-logo {
+  height: 42px;
+  object-fit: contain;
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-btn {
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+  color: #334155;
+  padding: 8px 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.dropdown-btn:hover {
+  background: #f1f5f9;
+  color: #0d1b7a;
+}
+
 .dropdown-content {
   display: none;
   position: absolute;
+  top: 100%;
+  left: 0;
   background-color: #ffffff;
-  min-width: 160px;
-  box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
-  z-index: 10;
-  border-radius: 4px;
+  min-width: 190px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  z-index: 20;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  padding: 6px;
 }
-.dropdown-content a { color: #333; padding: 8px 12px; text-decoration: none; display: block; font-size: 11px; }
-.dropdown-content a:hover { background-color: #f1f5f9; color: #0d1b7a; }
-.dropdown:hover .dropdown-content { display: block; }
+
+.dropdown-content a {
+  color: #475569;
+  padding: 8px 12px;
+  text-decoration: none;
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+.dropdown-content a:hover {
+  background-color: #eff6ff;
+  color: #0d1b7a;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
 
 /* Control & Tabs Bar */
 .control-bar {
@@ -443,6 +523,7 @@ const getChartData = (columnName: string): any => {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s;
 }
 
 .tab-btn.active {
@@ -480,7 +561,7 @@ const getChartData = (columnName: string): any => {
   background: #ffffff;
   color: #0d1b7a;
   font-weight: 700;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .select-wilayah {
@@ -490,8 +571,14 @@ const getChartData = (columnName: string): any => {
   padding: 8px 14px;
   border-radius: 6px;
   font-size: 12px;
+  font-weight: 600;
   outline: none;
   cursor: pointer;
+}
+
+.select-wilayah option {
+  background-color: #ffffff;
+  color: #1e293b;
 }
 
 /* Chart Container Cards */
@@ -509,17 +596,42 @@ const getChartData = (columnName: string): any => {
 
 .chart-card {
   background: white;
-  border: 4px solid #3b82f6;
-  border-radius: 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-.chart-card h2 {
-  font-size: 22px;
+.chart-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chart-card-header h2 {
+  font-size: 20px;
   font-weight: 800;
-  color: #1e293b;
-  margin: 0 0 16px 0;
+  color: #0d1b7a;
+  margin: 0;
+}
+
+.chart-meta-info {
+  font-size: 13px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-meta-info strong {
+  color: #0f172a;
+}
+
+.dot {
+  color: #cbd5e1;
 }
 
 .chart-box {
@@ -532,9 +644,17 @@ const getChartData = (columnName: string): any => {
   text-align: center;
   padding: 60px;
   color: #64748b;
+  font-weight: 500;
 }
 
 .error-state {
   color: #ef4444;
+}
+
+@media (max-width: 640px) {
+  .chart-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 </style>

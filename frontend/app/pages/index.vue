@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <div class="login-wrapper">
-      <!-- Logo Singa Utama -->
+      <!-- Logo Utama -->
       <div class="logo-box">
         <img :src="'/logo.png'" alt="Logo Singa" class="lion-logo" />
       </div>
@@ -15,9 +15,10 @@
             v-model="nik" 
             maxlength="8"
             @input="validateNikInput"
-            placeholder="8 digit NIK"
+            placeholder="Masukkan 8 digit NIK"
             required 
           />
+          <span v-if="errorMessage" class="error-text">{{ errorMessage }}</span>
         </div>
 
         <div class="form-group">
@@ -26,6 +27,7 @@
             <input 
               :type="showPassword ? 'text' : 'password'" 
               v-model="password" 
+              placeholder="Masukkan password"
               required 
             />
             <button 
@@ -60,6 +62,7 @@ import { ref } from 'vue'
 const nik = ref('')
 const password = ref('')
 const showPassword = ref(false)
+const errorMessage = ref('')
 
 // Data NIK Terdaftar
 const usersDatabase = [
@@ -70,11 +73,14 @@ const usersDatabase = [
 
 const validateNikInput = (event) => {
   nik.value = event.target.value.replace(/\D/g, '')
+  if (errorMessage.value) errorMessage.value = ''
 }
 
 const handleLogin = () => {
+  errorMessage.value = ''
+
   if (nik.value.length !== 8) {
-    alert('NIK harus terdiri dari tepat 8 digit angka!')
+    errorMessage.value = 'NIK harus 8 digit angka.'
     return
   }
 
@@ -84,7 +90,8 @@ const handleLogin = () => {
     localStorage.setItem('user_name', foundUser.name)
     navigateTo('/home')
   } else {
-    alert('NIK atau Password salah!\nGunakan NIK terdaftar (contoh: 10000001) dan Password: admin123')
+    // Alert umum tanpa menyebutkan credential/contoh user asli
+    alert('NIK atau Password salah!')
   }
 }
 </script>
@@ -144,6 +151,13 @@ const handleLogin = () => {
   font-size: 14px;
   box-sizing: border-box;
   outline: none;
+}
+
+.error-text {
+  color: #ef4444;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
 }
 
 .input-password-wrapper {

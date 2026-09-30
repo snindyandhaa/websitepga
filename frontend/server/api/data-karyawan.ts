@@ -1,14 +1,18 @@
 import { defineEventHandler, getQuery, createError } from 'h3'
 
+export interface KaryawanItem {
+  [key: string]: string
+}
+
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const sheet = (query.sheet as string) || 'all'
 
-  // ID Spreadsheet Google (Sudah diperbaiki huruf J yang hilang)
+  // ID Spreadsheet Google
   const sheetId = '1YQSq9tFrGZmm7Z1x_8zn5yY7qeM2EmHNxSjJT4vj5UQ'
 
   // Menentukan gid sheet berdasarkan query
-  let gid = '0' 
+  let gid = '0'
   if (sheet === 'sulawesi') {
     gid = '1627431459'
   } else if (sheet === 'kalimantan') {
@@ -29,9 +33,14 @@ export default defineEventHandler(async (event) => {
       throw new Error(`Google Sheets error status: ${response.status} ${response.statusText}`)
     }
 
-    const csvText = await response.text()
+    let csvText = await response.text()
 
-    // Fungsi Parser CSV sederhana
+    // Hapus BOM (Byte Order Mark) UTF-8 jika ada
+    if (csvText.startsWith('\uFEFF')) {
+      csvText = csvText.slice(1)
+    }
+
+    // Fungsi Parser CSV Presisi
     const parseCSVLine = (line: string): string[] => {
       const result: string[] = []
       let current = ''
@@ -42,32 +51,34 @@ export default defineEventHandler(async (event) => {
         if (char === '"') {
           inQuotes = !inQuotes
         } else if (char === ',' && !inQuotes) {
-          result.push(current.trim().replace(/^"|"$/g, ''))
+          result.push(current.trim().replace(/^"|"$/g, '').trim())
           current = ''
         } else {
           current += char
         }
       }
-      result.push(current.trim().replace(/^"|"$/g, ''))
+      result.push(current.trim().replace(/^"|"$/g, '').trim())
       return result
     }
 
     const lines: string[] = csvText.split(/\r?\n/).filter((line: string) => line.trim() !== '')
     if (lines.length < 2) return []
 
-    const headers: string[] = parseCSVLine(lines[0] ?? '')
-    const dataList: Record<string, string>[] = []
+    // Bersihkan header dari karakter rahasia / BOM
+    const headers: string[] = parseCSVLine(lines[0] ?? '').map(h => h.replace(/^\uFEFF/, '').trim())
+    const dataList: KaryawanItem[] = []
 
     for (let i = 1; i < lines.length; i++) {
       const values: string[] = parseCSVLine(lines[i] ?? '')
-      const rowObj: Record<string, string> = {}
+      const rowObj: KaryawanItem = {}
       let hasData = false
 
       headers.forEach((header: string, index: number) => {
         if (header) {
           const val = values[index] ?? ''
-          rowObj[header.trim()] = val.trim()
-          if (val.trim() !== '') hasData = true
+          const cleanVal = val.trim()
+          rowObj[header] = cleanVal
+          if (cleanVal !== '') hasData = true
         }
       })
 
@@ -80,7 +91,7 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     throw createError({
       statusCode: 500,
-      statusMessage: error.message
+      statusMessage: error.message || 'Gagal memproses data dari Google Sheets'
     })
   }
 })

@@ -1,6 +1,6 @@
 <template>
   <div class="page-wrapper">
-    <!-- Navbar (Persis Seperti Home, Tanpa Logout) -->
+    <!-- Navbar -->
     <header class="navbar">
       <div class="brand">
         <NuxtLink to="/home">
@@ -56,12 +56,55 @@
       <img src="/foto-karyawan.png" alt="Foto Karyawan" class="hero-banner-img" />
     </div>
 
+    <!-- Modal Pop-up Pengingat Perpanjangan Kontrak (Status: Temporary & Keterangan: Murni Aktif) -->
+    <div v-if="showContractNotifModal" class="notification-overlay" @click.self="closeContractNotif">
+      <div class="notification-card">
+        <div class="notification-header">
+          <div class="notification-header-title">
+            <span>⚠️</span>
+            <span class="notification-title-text">{{ contractNotifications.length }} Pengingat Perpanjangan Kontrak Karyawan</span>
+          </div>
+          <button @click="closeContractNotif" class="close-btn" title="Tutup">&times;</button>
+        </div>
+
+        <div class="notification-body">
+          <div v-if="loading" class="notification-loading">
+            Memeriksa masa berlaku kontrak karyawan Temporary...
+          </div>
+          <div v-else-if="contractNotifications.length === 0" class="notification-empty">
+            🎉 Tidak ada karyawan Temporary - Aktif yang mendekati akhir masa kontrak.
+          </div>
+          <div v-else class="notification-list">
+            <div v-for="(item, index) in contractNotifications" :key="index" class="notification-item">
+              <div class="item-icon">👤</div>
+              <div class="item-details">
+                <div class="item-title">
+                  <strong>{{ item.nama }} (NIK: {{ item.nik }})</strong> 
+                  <span class="item-badge" :class="getDaysRemainingClass(item.daysRemaining)">
+                    {{ getRemainingText(item.daysRemaining) }}
+                  </span>
+                </div>
+                <div class="item-desc">
+                  <span>Status: {{ item.status }}</span> • 
+                  <span>Keterangan: {{ item.keterangan }}</span> • 
+                  <span>Dept: {{ item.dept }}</span>
+                </div>
+                <div class="item-date">
+                  Join Date: <strong>{{ item.joinDateFormatted }}</strong> | Akhir Kontrak (1 Thn): <strong>{{ item.contractEndFormatted }}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Main Content Area -->
     <main class="content-container">
       <!-- Search & Filter Card Overlay -->
       <div class="search-filter-card">
         <div class="filter-dropdown">
-          <select v-model="selectedWilayah" class="select-field" @change="loadKaryawanData">
+          <select v-model="selectedWilayah" class="select-field">
             <option value="Semua">Semua Wilayah</option>
             <option value="MP - CPI Sulawesi Banumapa">MP - CPI Sulawesi Banumapa</option>
             <option value="MP - CPI Kalimantan">MP - CPI Kalimantan</option>
@@ -144,28 +187,30 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 
-const selectedWilayah = ref('Semua')
-const searchQuery = ref('')
-const showModal = ref(false)
+const selectedWilayah = ref<string>('Semua')
+const searchQuery = ref<string>('')
+const showModal = ref<boolean>(false)
 const selectedKaryawan = ref<Record<string, any> | null>(null)
-const karyawanList = ref<Record<string, any>[]>([])
-const loading = ref(true)
-const errorMessage = ref('')
+const allDataKaryawan = ref<Record<string, Record<string, any>[]>>({
+  'Semua': [],
+  'MP - CPI Sulawesi Banumapa': [],
+  'MP - CPI Kalimantan': []
+})
 
-const detailKeys = [
-  'Nama', 'NIK', 'Company', 'Divisi', 'Cost Center', 
+const loading = ref<boolean>(true)
+const errorMessage = ref<string>('')
+
+const showContractNotifModal = ref<boolean>(true)
+const contractNotifications = ref<any[]>([])
+
+const detailKeys: string[] = [
+  'Nama', 'NIK', 'Status', 'Keterangan', 'Company', 'Divisi', 'Cost Center', 
   'Join Date', 'Level', 'Birth Date', 'Last Promotion', 
   'Masa Bakti', 'Umur', 'Gender', 'Major', 'Generation', 
   'KTP', 'Education', 'DEPARTMENT'
 ]
 
-// Spreadsheet ID & GID Map
 const spreadsheetId = '1YQSq9tFrGZmm7Z1x_8zn5yY7qeM2EmHNxSjJT4vj5UQ'
-const gids: Record<string, string> = {
-  'Semua': '0',
-  'MP - CPI Sulawesi Banumapa': '1627431459',
-  'MP - CPI Kalimantan': '936973334'
-}
 
 const parseCsvLine = (text: string): string[] => {
   const result: string[] = []
@@ -177,102 +222,206 @@ const parseCsvLine = (text: string): string[] => {
     if (char === '"') {
       inQuotes = !inQuotes
     } else if (char === ',' && !inQuotes) {
-      result.push(entry.replace(/^"|"$/g, ''))
+      result.push(entry.replace(/^"|"$/g, '').trim())
       entry = ''
     } else {
       entry += char
     }
   }
-  result.push(entry.replace(/^"|"$/g, ''))
+  result.push(entry.replace(/^"|"$/g, '').trim())
   return result
 }
 
-const loadKaryawanData = async () => {
-  loading.value = true
-  errorMessage.value = ''
+const parseDate = (dateStr: any): Date | null => {
+  if (!dateStr || dateStr === '-') return null
+  const cleanStr = String(dateStr).trim()
+  
+  const parts = cleanStr.split(/[\/\-]/)
+  if (parts.length === 3) {
+    const day = parseInt(parts[0], 10)
+    const month = parseInt(parts[1], 10) - 1
+    const year = parseInt(parts[2], 10)
 
-  const gid = gids[selectedWilayah.value] || '0'
-  const csvUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`
-
-  try {
-    const csvText = await $fetch<string>(csvUrl, { responseType: 'text' })
-
-    if (!csvText || csvText.includes('<!DOCTYPE html>')) {
-      throw new Error('Gagal mengambil data dari Google Sheets. Pastikan spreadsheet di-share "Anyone with the link".')
+    if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+      return new Date(year, month, day)
     }
-
-    const lines = csvText.split('\n').map(l => l.replace('\r', ''))
-    if (lines.length < 2) {
-      karyawanList.value = []
-      return
-    }
-
-    const rawHeaders = lines.shift() || ''
-    const headers = parseCsvLine(rawHeaders).map(h => h.trim())
-
-    const parsedData: Record<string, any>[] = []
-
-    lines.forEach(line => {
-      if (line.trim() === '') return
-      const rowValues = parseCsvLine(line)
-      const item: Record<string, any> = {}
-      
-      headers.forEach((header, idx) => {
-        if (header) {
-          item[header] = rowValues[idx] ? rowValues[idx].trim() : ''
-        }
-      })
-
-      if (Object.values(item).some(v => v !== '')) {
-        parsedData.push(item)
-      }
-    })
-
-    karyawanList.value = parsedData
-
-  } catch (err: any) {
-    console.error('Error fetching data karyawan:', err)
-    errorMessage.value = err.message || 'Gagal terhubung ke Google Sheets.'
-  } finally {
-    loading.value = false
   }
+  
+  const dateObj = new Date(cleanStr)
+  return isNaN(dateObj.getTime()) ? null : dateObj
 }
 
-onMounted(() => {
-  loadKaryawanData()
-})
-
-const getVal = (item: Record<string, any> | null, keys: string[]) => {
+const getVal = (item: Record<string, any> | null, keys: string[]): string => {
   if (!item) return '-'
   const itemKeys = Object.keys(item)
   
   for (const k of keys) {
     const foundKey = itemKeys.find(ik => ik.toLowerCase().trim() === k.toLowerCase().trim())
     if (foundKey && item[foundKey] !== undefined && item[foundKey] !== null && String(item[foundKey]).trim() !== '') {
-      return item[foundKey]
+      return String(item[foundKey]).trim()
     }
   }
   return '-'
 }
 
+const getRemainingText = (days: number): string => {
+  if (days < 0) return `Habis Kontrak (${Math.abs(days)} hr lalu)`
+  if (days === 0) return 'Habis Kontrak Hari Ini!'
+  
+  const months = Math.floor(days / 30)
+  const remainingDays = days % 30
+
+  if (months > 0 && remainingDays > 0) {
+    return `Sisa ${months} bln ${remainingDays} hr`
+  } else if (months > 0 && remainingDays === 0) {
+    return `Sisa ${months} bulan`
+  } else {
+    return `Sisa ${days} hari`
+  }
+}
+
+const getDaysRemainingClass = (days: number): string => {
+  if (days <= 0) return 'badge-danger'
+  if (days <= 30) return 'badge-danger'
+  return 'badge-warning'
+}
+
+const closeContractNotif = (): void => {
+  showContractNotifModal.value = false
+}
+
+const parseSheetCsv = (csvText: string): Record<string, any>[] => {
+  let cleanCsv = csvText
+  if (cleanCsv.startsWith('\uFEFF')) {
+    cleanCsv = cleanCsv.slice(1)
+  }
+
+  const lines = cleanCsv.split('\n').map(l => l.replace('\r', ''))
+  if (lines.length < 2) return []
+
+  const rawHeaders = lines.shift() || ''
+  const headers = parseCsvLine(rawHeaders).map(h => h.replace(/^\uFEFF/, '').trim())
+
+  const parsedData: Record<string, any>[] = []
+
+  lines.forEach(line => {
+    if (line.trim() === '') return
+    const rowValues = parseCsvLine(line)
+    const item: Record<string, any> = {}
+    
+    headers.forEach((header, idx) => {
+      if (header) {
+        item[header] = rowValues[idx] ? rowValues[idx].trim() : ''
+      }
+    })
+
+    if (Object.values(item).some(v => v !== '')) {
+      parsedData.push(item)
+    }
+  })
+
+  return parsedData
+}
+
+const checkContractExpirations = (data: Record<string, any>[]): void => {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const notifs: any[] = []
+
+  data.forEach(item => {
+    const statusVal = getVal(item, ['Status', 'STATUS', 'Emp Status', 'Status Karyawan']).toLowerCase()
+    const ketVal = getVal(item, ['Keterangan', 'KETERANGAN', 'Ket', 'REMARKS']).toLowerCase()
+
+    // 1. HARUS MURNI "Aktif" (Abaikan yang bernilai Retire / Aktif - Retire)
+    const isAktifMurni = ketVal === 'aktif'
+    const isTemporary = statusVal.includes('tempo') || statusVal.includes('temporary')
+
+    if (isTemporary && isAktifMurni) {
+      const rawJoinDate = getVal(item, ['Join Date', 'JOIN DATE', 'Tanggal Masuk', 'TGL MASUK'])
+      const joinDate = parseDate(rawJoinDate)
+
+      if (joinDate) {
+        const contractEndDate = new Date(joinDate)
+        contractEndDate.setFullYear(contractEndDate.getFullYear() + 1)
+
+        const diffTime = contractEndDate.getTime() - today.getTime()
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+        // 2. HANYA MUNCULKAN yang sisa waktunya <= 60 HARI dan BELUM MELEWATI BATAS SANGAT LAMA (> -90 hari)
+        if (diffDays <= 60 && diffDays >= -90) {
+          notifs.push({
+            nama: getVal(item, ['Nama', 'NAMA', 'Name']),
+            nik: getVal(item, ['NIK', 'NIP', 'Pers No']),
+            status: getVal(item, ['Status', 'STATUS']) || 'Temporary',
+            keterangan: getVal(item, ['Keterangan', 'KETERANGAN']) || 'Aktif',
+            dept: getVal(item, ['DEPARTMENT', 'Department', 'Divisi']),
+            joinDateFormatted: joinDate.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }),
+            contractEndFormatted: contractEndDate.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }),
+            daysRemaining: diffDays
+          })
+        }
+      }
+    }
+  })
+
+  notifs.sort((a, b) => a.daysRemaining - b.daysRemaining)
+  contractNotifications.value = notifs
+}
+
+const loadAllSheets = async (): Promise<void> => {
+  loading.value = true
+  errorMessage.value = ''
+
+  try {
+    const [resAll, resSulawesi, resKalimantan] = await Promise.allSettled([
+      $fetch<string>(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=0`, { responseType: 'text' }),
+      $fetch<string>(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=1627431459`, { responseType: 'text' }),
+      $fetch<string>(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=936973334`, { responseType: 'text' })
+    ])
+
+    const dataSemua = resAll.status === 'fulfilled' ? parseSheetCsv(resAll.value) : []
+    const dataSulawesi = resSulawesi.status === 'fulfilled' ? parseSheetCsv(resSulawesi.value) : []
+    const dataKalimantan = resKalimantan.status === 'fulfilled' ? parseSheetCsv(resKalimantan.value) : []
+
+    allDataKaryawan.value['Semua'] = dataSemua.length > 0 ? dataSemua : [...dataSulawesi, ...dataKalimantan]
+    allDataKaryawan.value['MP - CPI Sulawesi Banumapa'] = dataSulawesi
+    allDataKaryawan.value['MP - CPI Kalimantan'] = dataKalimantan
+
+    checkContractExpirations(allDataKaryawan.value['Semua'])
+
+  } catch (err: any) {
+    console.error('Error fetching data karyawan:', err)
+    errorMessage.value = 'Gagal terhubung ke Google Sheets.'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  showContractNotifModal.value = true
+  loadAllSheets()
+})
+
 const filteredKaryawan = computed(() => {
+  const currentList = allDataKaryawan.value[selectedWilayah.value] || []
   const q = searchQuery.value.toLowerCase().trim()
 
-  if (!q) return karyawanList.value
+  if (!q) return currentList
 
-  return karyawanList.value.filter(item => {
+  return currentList.filter(item => {
     const nama = getVal(item, ['Nama', 'NAMA', 'Name']).toLowerCase()
     const nik = getVal(item, ['NIK', 'NIP', 'Pers No', 'No ID']).toLowerCase()
     return nama.includes(q) || nik.includes(q)
   })
 })
 
-const openModal = (item: Record<string, any>) => {
+const openModal = (item: Record<string, any>): void => {
   selectedKaryawan.value = item
   showModal.value = true
 }
 
-const closeModal = () => {
+const closeModal = (): void => {
   showModal.value = false
   selectedKaryawan.value = null
 }
@@ -283,6 +432,169 @@ const closeModal = () => {
   min-height: 100vh;
   background-color: #f1f5f9;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Modal Popup Notifikasi Kontrak Karyawan */
+.notification-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.notification-card {
+  background: #ffffff;
+  width: 100%;
+  max-width: 580px;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+}
+
+.notification-header {
+  background: #0d1b7a;
+  color: #ffffff;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notification-header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.close-btn:hover {
+  opacity: 1;
+}
+
+.notification-body {
+  padding: 16px 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.notification-loading, .notification-empty {
+  text-align: center;
+  padding: 24px 12px;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.notification-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notification-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  align-items: flex-start;
+}
+
+.item-icon {
+  font-size: 22px;
+  background: #e0e7ff;
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.item-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.item-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.item-badge {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.badge-danger {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.badge-warning {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.item-desc {
+  font-size: 12px;
+  color: #475569;
+}
+
+.item-date {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.notification-footer {
+  padding: 12px 20px;
+  background: #f1f5f9;
+  border-top: 1px solid #e2e8f0;
+  text-align: right;
+}
+
+.btn-close-footer {
+  background: #0d1b7a;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-close-footer:hover {
+  background: #1428a3;
 }
 
 /* Navbar */
@@ -632,6 +944,11 @@ td.col-aksi {
   border-radius: 8px;
 }
 .status-error { color: #ef4444; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
 
 @media (max-width: 640px) {
   .modal-body-grid {
