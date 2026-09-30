@@ -66,7 +66,7 @@ const errorMessage = ref('')
 
 // Data NIK Terdaftar
 const usersDatabase = [
-  { nik: '10000001', name: 'Pak Randy Utama' },
+  { nik: '21801089', name: 'Randy Utama' },
   { nik: '10000002', name: 'Pak Budi Santoso' },
   { nik: '10000003', name: 'Ibu Siti Aminah' },
 ]
