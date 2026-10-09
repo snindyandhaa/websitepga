@@ -56,7 +56,7 @@
       <img src="/foto-karyawan.png" alt="Foto Karyawan" class="hero-banner-img" />
     </div>
 
-    <!-- Modal Pop-up Pengingat Perpanjangan Kontrak (Status: Temporary & Keterangan: Murni Aktif) -->
+    <!-- Modal Pop-up Pengingat Perpanjangan Kontrak -->
     <div v-if="showContractNotifModal" class="notification-overlay" @click.self="closeContractNotif">
       <div class="notification-card">
         <div class="notification-header">
@@ -333,7 +333,6 @@ const checkContractExpirations = (data: Record<string, any>[]): void => {
     const statusVal = getVal(item, ['Status', 'STATUS', 'Emp Status', 'Status Karyawan']).toLowerCase()
     const ketVal = getVal(item, ['Keterangan', 'KETERANGAN', 'Ket', 'REMARKS']).toLowerCase()
 
-    // 1. HARUS MURNI "Aktif" (Abaikan yang bernilai Retire / Aktif - Retire)
     const isAktifMurni = ketVal === 'aktif'
     const isTemporary = statusVal.includes('tempo') || statusVal.includes('temporary')
 
@@ -348,7 +347,6 @@ const checkContractExpirations = (data: Record<string, any>[]): void => {
         const diffTime = contractEndDate.getTime() - today.getTime()
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
-        // 2. HANYA MUNCULKAN yang sisa waktunya <= 60 HARI dan BELUM MELEWATI BATAS SANGAT LAMA (> -90 hari)
         if (diffDays <= 60 && diffDays >= -90) {
           notifs.push({
             nama: getVal(item, ['Nama', 'NAMA', 'Name']),
@@ -432,6 +430,8 @@ const closeModal = (): void => {
   min-height: 100vh;
   background-color: #f1f5f9;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Modal Popup Notifikasi Kontrak Karyawan */
@@ -692,11 +692,13 @@ const closeModal = (): void => {
 
 /* Content Area & Search Card Overlay */
 .content-container {
+  width: 100%;
   max-width: 1200px;
   margin: -45px auto 40px auto;
   padding: 0 16px;
   position: relative;
   z-index: 20;
+  box-sizing: border-box;
 }
 
 .search-filter-card {
@@ -776,13 +778,15 @@ const closeModal = (): void => {
 .table-card {
   background: #ffffff;
   border-radius: 8px;
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .main-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 500px;
 }
 
 .main-table thead {
@@ -950,7 +954,40 @@ td.col-aksi {
   to { opacity: 1; transform: scale(1); }
 }
 
-@media (max-width: 640px) {
+/* Responsif Layar HP/Tablet (< 768px) */
+@media screen and (max-width: 768px) {
+  .navbar {
+    padding: 12px 16px;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .nav-menu {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .hero-banner-container {
+    height: 180px;
+  }
+
+  .content-container {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin: -30px auto 24px;
+    padding: 0 12px;
+  }
+
+  .search-filter-card {
+    flex-direction: column;
+  }
+
+  .filter-dropdown {
+    width: 100%;
+    border-radius: 8px 8px 0 0;
+  }
+
   .modal-body-grid {
     grid-template-columns: 1fr;
   }

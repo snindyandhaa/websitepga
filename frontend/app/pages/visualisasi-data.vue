@@ -109,7 +109,6 @@
         <!-- TAB 1: DATA COMPANY -->
         <div v-if="activeTab === 'company'" class="chart-group">
           <div v-for="col in ['Company', 'Divisi', 'Generation']" :key="col" class="chart-card">
-            <!-- Header Judul + Keterangan Kecil di Atas -->
             <div class="chart-card-header">
               <h2>{{ col === 'Divisi' ? 'Division' : col }}</h2>
               <div class="chart-meta-info">
@@ -119,8 +118,8 @@
               </div>
             </div>
 
-            <div class="chart-box">
-              <Bar v-if="chartType === 'bar'" :data="getChartData(col)" :options="barOptions" />
+            <div class="chart-box" :style="{ height: getChartHeight(col) }">
+              <Bar v-if="chartType === 'bar'" :data="getChartData(col)" :options="getBarOptions(col)" />
               <Pie v-else :data="getChartData(col)" :options="pieOptions" />
             </div>
           </div>
@@ -129,7 +128,6 @@
         <!-- TAB 2: DATA MASA BAKTI -->
         <div v-if="activeTab === 'masabakti'" class="chart-group">
           <div v-for="col in ['Masa Bakti', 'Level']" :key="col" class="chart-card">
-            <!-- Header Judul + Keterangan Kecil di Atas -->
             <div class="chart-card-header">
               <h2>{{ col }}</h2>
               <div class="chart-meta-info">
@@ -139,8 +137,8 @@
               </div>
             </div>
 
-            <div class="chart-box">
-              <Bar v-if="chartType === 'bar'" :data="getChartData(col)" :options="barOptions" />
+            <div class="chart-box" :style="{ height: getChartHeight(col) }">
+              <Bar v-if="chartType === 'bar'" :data="getChartData(col)" :options="getBarOptions(col)" />
               <Pie v-else :data="getChartData(col)" :options="pieOptions" />
             </div>
           </div>
@@ -149,7 +147,6 @@
         <!-- TAB 3: DATA EDUCATION -->
         <div v-if="activeTab === 'education'" class="chart-group">
           <div class="chart-card">
-            <!-- Header Judul + Keterangan Kecil di Atas -->
             <div class="chart-card-header">
               <h2>Education</h2>
               <div class="chart-meta-info">
@@ -159,8 +156,8 @@
               </div>
             </div>
 
-            <div class="chart-box">
-              <Bar v-if="chartType === 'bar'" :data="getChartData('Education')" :options="barOptions" />
+            <div class="chart-box" :style="{ height: getChartHeight('Education') }">
+              <Bar v-if="chartType === 'bar'" :data="getChartData('Education')" :options="getBarOptions('Education')" />
               <Pie v-else :data="getChartData('Education')" :options="pieOptions" />
             </div>
           </div>
@@ -198,7 +195,6 @@ const errorMessage = ref<string>('')
 
 const karyawanList = ref<KaryawanRow[]>([])
 
-// WARNA-WARNI UNTUK DIAGRAM & BAR CHART
 const chartColors: string[] = [
   '#2563eb', '#10b981', '#f59e0b', '#ef4444', 
   '#8b5cf6', '#06b6d4', '#ec4899', '#6366f1', 
@@ -206,16 +202,50 @@ const chartColors: string[] = [
   '#64748b', '#0284c7', '#d97706', '#dc2626'
 ]
 
-const barOptions: ChartOptions<'bar'> = {
-  responsive: true,
-  maintainAspectRatio: false,
-  indexAxis: 'y',
-  plugins: {
-    legend: { display: false }
-  },
-  scales: {
-    x: { beginAtZero: true },
-    y: { grid: { display: false } }
+// Urutan Tingkat Pendidikan (S3 s/d SD)
+const eduOrder = [
+  'STRATA 3', 'S3', 'DOCTOR',
+  'STRATA 2', 'S2', 'MAGISTER',
+  'STRATA 1', 'S1', 'SARJANA',
+  'DIPLOMA 4', 'D4',
+  'DIPLOMA 3', 'D3',
+  'DIPLOMA 2', 'D2',
+  'DIPLOMA 1', 'D1',
+  'SMA', 'SMK', 'SMK / STM', 'STM', 'SLTA',
+  'SMP', 'SLTP',
+  'SD'
+]
+
+const getEduRank = (label: string): number => {
+  const norm = label.toUpperCase().trim()
+  const idx = eduOrder.findIndex(item => norm.includes(item))
+  return idx !== -1 ? idx : 999
+}
+
+// Konfigurasi Bar Chart Dinamis Sesuai Jumlah Kategori
+const getBarOptions = (columnName: string): ChartOptions<'bar'> => {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    indexAxis: 'y',
+    plugins: {
+      legend: { display: false }
+    },
+    scales: {
+      x: { 
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+          precision: 0
+        }
+      },
+      y: { 
+        grid: { display: false },
+        ticks: {
+          autoSkip: false // Memastikan semua label ditampilkan tanpa terlewat
+        }
+      }
+    }
   }
 }
 
@@ -296,6 +326,26 @@ const getPropertyValue = (item: KaryawanRow, columnName: string): string => {
   return 'Tidak Terdata'
 }
 
+const calculateMasaBaktiFromJoinDate = (joinDateStr: string): string => {
+  if (!joinDateStr || joinDateStr === '-') return '0 Tahun'
+  const parts = joinDateStr.split(/[\/\-]/)
+  if (parts.length === 3) {
+    const day = parseInt(parts[0] || '0', 10)
+    const month = parseInt(parts[1] || '0', 10) - 1
+    const year = parseInt(parts[2] || '0', 10)
+    if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+      const joinDate = new Date(year, month, day)
+      const now = new Date()
+      let diff = now.getFullYear() - joinDate.getFullYear()
+      if (now.getMonth() < joinDate.getMonth() || (now.getMonth() === joinDate.getMonth() && now.getDate() < joinDate.getDate())) {
+        diff--
+      }
+      return `${Math.max(0, diff)} Tahun`
+    }
+  }
+  return '0 Tahun'
+}
+
 const loadKaryawanData = async (): Promise<void> => {
   loading.value = true
   errorMessage.value = ''
@@ -355,6 +405,7 @@ onMounted(() => {
   loadKaryawanData()
 })
 
+// LOGIKA PENGURUTAN PRESISI DUA ARAH (MASA BAKTI & EDUCATION)
 const getChartData = (columnName: string): ChartData<'bar' | 'pie'> => {
   const counts: Record<string, number> = {}
 
@@ -362,16 +413,44 @@ const getChartData = (columnName: string): ChartData<'bar' | 'pie'> => {
     let rawVal = getPropertyValue(item, columnName)
 
     if (columnName.toLowerCase().includes('masabakti') || columnName.toLowerCase().includes('masa bakti')) {
-      if (rawVal !== 'Tidak Terdata' && !rawVal.toLowerCase().includes('tahun')) {
-        rawVal = `${rawVal} Tahun`
+      if (rawVal === 'Tidak Terdata' || rawVal === '-' || rawVal === '' || rawVal.includes('#')) {
+        const joinDate = getPropertyValue(item, 'Join Date')
+        rawVal = calculateMasaBaktiFromJoinDate(joinDate)
+      } else {
+        const match = rawVal.match(/\d+/)
+        if (match) {
+          rawVal = `${match[0]} Tahun`
+        } else {
+          rawVal = '0 Tahun'
+        }
       }
     }
 
     counts[rawVal] = (counts[rawVal] ?? 0) + 1
   })
 
-  // URUTKAN DESCENDING (TERBANYAK -> TERKECIL)
-  const sortedKeys = Object.keys(counts).sort((a, b) => (counts[b] ?? 0) - (counts[a] ?? 0))
+  const colLower = columnName.toLowerCase()
+  const isEducation = colLower.includes('education') || colLower.includes('pendidikan')
+  const isTimeBased = colLower.includes('generation') || colLower.includes('masabakti') || colLower.includes('masa bakti') || colLower.includes('year') || colLower.includes('tahun')
+
+  const sortedKeys = Object.keys(counts).sort((a, b) => {
+    if (isEducation) {
+      return getEduRank(a) - getEduRank(b)
+    }
+
+    if (isTimeBased) {
+      const matchA = a.match(/\d+/)
+      const matchB = b.match(/\d+/)
+
+      if (matchA && matchB) {
+        const numA = parseInt(matchA[0], 10)
+        const numB = parseInt(matchB[0], 10)
+        return numA - numB
+      }
+    }
+
+    return (counts[b] ?? 0) - (counts[a] ?? 0)
+  })
 
   return {
     labels: sortedKeys,
@@ -386,28 +465,48 @@ const getChartData = (columnName: string): ChartData<'bar' | 'pie'> => {
   }
 }
 
-// MENGHITUNG KETERANGAN RINGKAS ATAS
+// MENGHITUNG TINGGI GRAFIK DENGAN DUKUNGAN BANYAK BAR MASA BAKTI
+const getChartHeight = (columnName: string): string => {
+  if (chartType.value === 'pie') return '350px'
+
+  const data = getChartData(columnName)
+  const categoryCount = data.labels?.length || 0
+
+  if (categoryCount > 15) return `${categoryCount * 28}px`
+  return '350px'
+}
+
 const getSummaryStats = (columnName: string) => {
   const counts: Record<string, number> = {}
   let total = 0
 
   karyawanList.value.forEach(item => {
     let rawVal = getPropertyValue(item, columnName)
+
     if (columnName.toLowerCase().includes('masabakti') || columnName.toLowerCase().includes('masa bakti')) {
-      if (rawVal !== 'Tidak Terdata' && !rawVal.toLowerCase().includes('tahun')) {
-        rawVal = `${rawVal} Tahun`
+      if (rawVal === 'Tidak Terdata' || rawVal === '-' || rawVal === '' || rawVal.includes('#')) {
+        const joinDate = getPropertyValue(item, 'Join Date')
+        rawVal = calculateMasaBaktiFromJoinDate(joinDate)
+      } else {
+        const match = rawVal.match(/\d+/)
+        if (match) {
+          rawVal = `${match[0]} Tahun`
+        } else {
+          rawVal = '0 Tahun'
+        }
       }
     }
+
     counts[rawVal] = (counts[rawVal] ?? 0) + 1
     total++
   })
 
-  const sortedKeys = Object.keys(counts).sort((a, b) => (counts[b] ?? 0) - (counts[a] ?? 0))
+  const sortedByCount = Object.keys(counts).sort((a, b) => (counts[b] ?? 0) - (counts[a] ?? 0))
 
   return {
     total,
-    topCategory: sortedKeys[0] || '-',
-    topCount: counts[sortedKeys[0] || ''] || 0
+    topCategory: sortedByCount[0] || '-',
+    topCount: counts[sortedByCount[0] || ''] || 0
   }
 }
 </script>
@@ -417,6 +516,8 @@ const getSummaryStats = (columnName: string) => {
   background-color: #f8fafc;
   min-height: 100vh;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Navbar Style */
@@ -512,6 +613,7 @@ const getSummaryStats = (columnName: string) => {
 .tabs {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .tab-btn {
@@ -537,6 +639,7 @@ const getSummaryStats = (columnName: string) => {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .chart-type-toggle {
@@ -586,6 +689,7 @@ const getSummaryStats = (columnName: string) => {
   max-width: 1000px;
   margin: 0 auto 50px auto;
   padding: 0 20px;
+  box-sizing: border-box;
 }
 
 .chart-group {
@@ -636,7 +740,6 @@ const getSummaryStats = (columnName: string) => {
 
 .chart-box {
   position: relative;
-  height: 320px;
   width: 100%;
 }
 
@@ -651,7 +754,38 @@ const getSummaryStats = (columnName: string) => {
   color: #ef4444;
 }
 
-@media (max-width: 640px) {
+/* Responsif Layar HP/Tablet (< 768px) */
+@media screen and (max-width: 768px) {
+  .navbar {
+    padding: 12px 16px;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .nav-menu {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .control-bar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0 16px;
+    margin-top: 16px;
+  }
+
+  .filter-group {
+    justify-content: space-between;
+  }
+
+  .charts-wrapper {
+    padding: 0 16px;
+  }
+
+  .chart-card {
+    padding: 16px;
+  }
+
   .chart-card-header {
     flex-direction: column;
     align-items: flex-start;

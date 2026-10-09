@@ -279,7 +279,6 @@ const getVal = (item: Record<string, any> | null, keys: string[]) => {
   return '-'
 }
 
-// Opsi Tahun Otomatis Muncul Berdasarkan Data Google Sheets
 const availableYears = computed(() => {
   const yearsSet = new Set<string>()
   employeeList.value.forEach(item => {
@@ -289,7 +288,6 @@ const availableYears = computed(() => {
   return Array.from(yearsSet).sort((a, b) => Number(b) - Number(a))
 })
 
-// Opsi Status/Jenis Rotasi Otomatis Muncul Berdasarkan Data
 const availableStatuses = computed(() => {
   const statusSet = new Set<string>()
   employeeList.value.forEach(item => {
@@ -353,7 +351,6 @@ onMounted(() => {
   fetchEmployeeRotation()
 })
 
-// LOGIKA DUAL FILTER: SEARCH BAR + DROP-DOWN MULTI-FILTER (Tahun, Bulan, Status/Resign)
 const filteredEmployees = computed(() => {
   return employeeList.value.filter(item => {
     const rawDate = String(getVal(item, ['Mutation Date', 'MUTATION DATE', 'Tgl Mutasi']))
@@ -361,22 +358,18 @@ const filteredEmployees = computed(() => {
     const thnVal = getYearNumber(rawDate)
     const rotasiVal = String(getVal(item, ['Status', 'STATUS', 'Jenis Rotasi'])).trim()
 
-    // 1. Filter Tahun Dropdown
     if (selectedTahun.value !== 'Semua' && thnVal !== selectedTahun.value) {
       return false
     }
 
-    // 2. Filter Bulan Dropdown
     if (selectedBulan.value !== 'Semua' && blnVal !== selectedBulan.value) {
       return false
     }
 
-    // 3. Filter Jenis Rotasi / Status Dropdown (Resign, Mutasi, Promosi, dll)
     if (selectedRotasi.value !== 'Semua' && rotasiVal.toLowerCase() !== selectedRotasi.value.toLowerCase()) {
       return false
     }
 
-    // 4. Input Search Query Keyword (Mencari Nama/NIK/dll)
     const q = searchQuery.value.toLowerCase().trim()
     if (q) {
       const nama = String(getVal(item, ['Name', 'NAMA', 'Nama Karyawan', 'Nama'])).toLowerCase()
@@ -422,6 +415,8 @@ const closeModal = () => {
   min-height: 100vh;
   background-color: #f1f5f9;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Navbar */
@@ -519,11 +514,13 @@ const closeModal = () => {
 
 /* Content */
 .content-container {
+  width: 100%;
   max-width: 1200px;
   margin: -45px auto 40px auto;
   padding: 0 16px;
   position: relative;
   z-index: 20;
+  box-sizing: border-box;
 }
 
 /* Multi Filter Card */
@@ -629,17 +626,19 @@ const closeModal = () => {
   border-color: #fca5a5;
 }
 
-/* Table */
+/* Table Card */
 .table-card {
   background: #ffffff;
   border-radius: 8px;
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .main-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 750px;
 }
 
 .main-table thead {
@@ -819,12 +818,41 @@ const closeModal = () => {
 }
 .status-error { color: #ef4444; }
 
-@media (max-width: 640px) {
+/* Responsif Layar HP/Tablet (< 768px) */
+@media screen and (max-width: 768px) {
+  .navbar {
+    padding: 12px 16px;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .nav-menu {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .hero-banner-container {
+    height: 180px;
+  }
+
+  .content-container {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin: -30px auto 24px;
+    padding: 0 12px;
+  }
+
   .dropdown-filter-row {
     flex-direction: column;
   }
+
   .filter-item {
     width: 100%;
+  }
+
+  .modal-body-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>

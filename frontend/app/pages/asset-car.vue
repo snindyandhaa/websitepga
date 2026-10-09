@@ -1,179 +1,136 @@
 <template>
-  <div class="asset-container">
-    <!-- Navbar Header -->
+  <div class="page-wrapper">
     <header class="navbar">
       <div class="brand">
         <NuxtLink to="/home">
           <img src="/logo.png" alt="Logo" class="nav-logo" />
         </NuxtLink>
       </div>
-
       <nav class="nav-menu">
         <div class="dropdown">
-          <button>Data MP ▾</button>
+          <button class="dropdown-btn">Data MP ▾</button>
           <div class="dropdown-content">
             <NuxtLink to="/data-karyawan">Data Karyawan</NuxtLink>
             <NuxtLink to="/visualisasi-data">Visualisasi Data</NuxtLink>
             <NuxtLink to="/employee-rotation">Employee Rotation</NuxtLink>
           </div>
         </div>
-
         <div class="dropdown">
-          <button>General Affair Asset ▾</button>
+          <button class="dropdown-btn">General Affair Asset ▾</button>
           <div class="dropdown-content">
             <NuxtLink to="/asset-car">Asset Car</NuxtLink>
             <NuxtLink to="/asset-pga">Asset PGA</NuxtLink>
           </div>
         </div>
-
         <div class="dropdown">
-          <button>Asuransi ▾</button>
+          <button class="dropdown-btn">Asuransi ▾</button>
           <div class="dropdown-content">
             <NuxtLink to="/reliance">Reliance</NuxtLink>
             <NuxtLink to="/bpjs">BPJS</NuxtLink>
           </div>
         </div>
-
         <div class="dropdown">
-          <button>Recruitment ▾</button>
+          <button class="dropdown-btn">Recruitment ▾</button>
           <div class="dropdown-content">
             <NuxtLink to="/data-summary">Data Summary</NuxtLink>
           </div>
         </div>
-
         <div class="dropdown">
-          <button>More ▾</button>
+          <button class="dropdown-btn">More ▾</button>
           <div class="dropdown-content">
             <NuxtLink to="/wip-hcga">Work In Progress HC & GA</NuxtLink>
             <NuxtLink to="/budget-department">Budget Department</NuxtLink>
           </div>
         </div>
-
-        <NuxtLink to="/" class="btn-logout">Logout</NuxtLink>
       </nav>
     </header>
-
-    <!-- Banner Hero Section -->
-    <section class="hero-section">
-      <img src="/foto-karyawan.png" alt="Pabrik Header" class="hero-bg" />
-    </section>
-
-    <!-- Search Section & Toggle Mode (Data / Diagram) -->
-    <div class="search-section">
-      <div class="search-bar-row">
-        <div class="search-box">
-          <input 
-            v-model="searchQuery" 
-            type="text" 
-            placeholder="Kata Kunci: [Location] [Department] [License No] [Merek]" 
-            class="input-search"
-          />
-          <button class="btn-search">🔍</button>
-        </div>
-
-        <!-- Tombol Switch Data / Diagram -->
-        <div class="view-toggle">
-          <button 
-            :class="['toggle-btn', { active: viewMode === 'data' }]" 
-            @click="viewMode = 'data'">
-            📋 Data
-          </button>
-          <button 
-            :class="['toggle-btn', { active: viewMode === 'diagram' }]" 
-            @click="viewMode = 'diagram'">
-            📊 Diagram
-          </button>
+    <div class="hero-banner-container">
+      <img src="/foto-karyawan.png" alt="Pabrik Header" class="hero-banner-img" />
+    </div>
+    <main class="content-container">
+      <div class="filter-card">
+        <div class="search-bar-row">
+          <div class="search-input-group">
+            <input 
+              v-model="searchQuery" 
+              type="text" 
+              placeholder="Kata Kunci: [Location] [Department] [License No] [Merek]" 
+              class="input-field"
+            />
+            <button class="btn-search-icon" aria-label="Cari">🔍</button>
+          </div>
+          <div class="view-toggle">
+            <button 
+              :class="['toggle-btn', { active: viewMode === 'data' }]" 
+              @click="viewMode = 'data'">
+              📋 Data Tabel
+            </button>
+            <button 
+              :class="['toggle-btn', { active: viewMode === 'diagram' }]" 
+              @click="viewMode = 'diagram'">
+              📊 Diagram (Pie)
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-
-    <!-- Main Content Area -->
-    <main class="content-wrapper">
-      <!-- State Loading -->
       <div v-if="loading" class="table-card">
-        <div class="loading-text">
+        <div class="status-msg">
           Memuat data Asset Car dari Google Sheets...
         </div>
       </div>
-
-      <!-- State Error -->
       <div v-else-if="errorMessage" class="table-card">
-        <div class="error-text">
+        <div class="status-error">
           {{ errorMessage }}
         </div>
       </div>
 
       <template v-else>
-        <!-- TAMPILAN 1: TABEL DATA -->
         <div v-if="viewMode === 'data'" class="table-card">
-          <table class="custom-table">
+          <table class="main-table">
             <thead>
               <tr>
-                <th>Location</th>
-                <th>Department</th>
-                <th>License No</th>
-                <th class="text-center">Aksi</th>
+                <th class="col-no center">No</th>
+                <th class="col-location">Location</th>
+                <th class="col-department">Department</th>
+                <th class="col-license">License No</th>
+                <th class="col-aksi center">Aksi</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(item, index) in filteredAssets" :key="index">
-                <td>{{ getVal(item, ['LOCATION', 'Location', 'Lokasi']) }}</td>
-                <td>{{ getVal(item, ['DEPARTMENT', 'Department', 'Departemen']) }}</td>
-                <td><strong>{{ getVal(item, ['LICENSE NO', 'License No', 'LICENSE', 'No Polisi']) }}</strong></td>
-                <td class="text-center">
-                  <button class="btn-detail" @click="openModal(item)">Lihat detail</button>
+              <tr v-for="(item, index) in filteredAssets" :key="index" class="table-row">
+                <td class="text-data center">{{ index + 1 }}</td>
+                <td class="text-data">{{ getVal(item, ['LOCATION', 'Location', 'Lokasi']) }}</td>
+                <td class="text-data">{{ getVal(item, ['DEPARTMENT', 'Department', 'Departemen']) }}</td>
+                <td class="text-data"><strong>{{ getVal(item, ['LICENSE NO', 'License No', 'LICENSE', 'No Polisi']) }}</strong></td>
+                <td class="col-aksi center">
+                  <button class="btn-action" @click="openModal(item)">
+                    Lihat Detail
+                  </button>
                 </td>
               </tr>
               <tr v-if="filteredAssets.length === 0">
-                <td colspan="4" class="text-center no-data">
-                  Data aset tidak ditemukan.
+                <td colspan="5" class="empty-data">
+                  Data aset mobil tidak ditemukan.
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- TAMPILAN 2: DIAGRAM LINGKARAN / PIE CHART -->
+        <!-- TAMPILAN 2: DIAGRAM (PIE CHART) -->
         <div v-if="viewMode === 'diagram'" class="charts-grid">
-          <div class="chart-card">
-            <h3>Department</h3>
-            <div class="chart-box">
-              <Pie :data="getPieChartData(['DEPARTMENT', 'Department', 'Departemen'])" :options="pieOptions" />
+          <div v-for="cat in chartCategories" :key="cat.title" class="chart-card">
+            <div class="chart-card-header">
+              <h3>{{ cat.title }}</h3>
+              <div class="chart-meta-info">
+                <span>Total: <strong>{{ getSummaryStats(cat.keys).total }} Unit</strong></span>
+                <span class="dot">•</span>
+                <span>Terbanyak: <strong>{{ getSummaryStats(cat.keys).topCategory }} ({{ getSummaryStats(cat.keys).topCount }})</strong></span>
+              </div>
             </div>
-          </div>
 
-          <div class="chart-card">
-            <h3>Location</h3>
             <div class="chart-box">
-              <Pie :data="getPieChartData(['LOCATION', 'Location', 'Lokasi'])" :options="pieOptions" />
-            </div>
-          </div>
-
-          <div class="chart-card">
-            <h3>Year Made</h3>
-            <div class="chart-box">
-              <Pie :data="getPieChartData(['YEAR MADE', 'Year Made', 'Tahun'])" :options="pieOptions" />
-            </div>
-          </div>
-
-          <div class="chart-card">
-            <h3>Merek</h3>
-            <div class="chart-box">
-              <Pie :data="getPieChartData(['MEREK', 'Merek', 'Brand'])" :options="pieOptions" />
-            </div>
-          </div>
-
-          <div class="chart-card">
-            <h3>Type-1</h3>
-            <div class="chart-box">
-              <Pie :data="getPieChartData(['TYPE-1', 'Type-1', 'Tipe'])" :options="pieOptions" />
-            </div>
-          </div>
-
-          <div class="chart-card">
-            <h3>Fuel</h3>
-            <div class="chart-box">
-              <Pie :data="getPieChartData(['FUEL', 'Fuel', 'Bahan Bakar'])" :options="pieOptions" />
+              <Pie :data="getPieChartData(cat.keys)" :options="pieOptions" />
             </div>
           </div>
         </div>
@@ -182,70 +139,68 @@
 
     <!-- Modal Popup Detail Asset Car -->
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
-      <div class="modal-card">
-        <div class="modal-header">
-          <h3>Detail Asset Car</h3>
-          <button class="btn-close" @click="closeModal">✕</button>
+      <div class="modal-box">
+        <div class="modal-header-blue">
+          <h2>Detail Asset Car</h2>
+          <button class="btn-close-x" @click="closeModal">&times;</button>
         </div>
 
-        <div class="modal-body" v-if="selectedAsset">
-          <div class="detail-grid">
-            <div class="detail-item">
-              <label>License No</label>
-              <span>{{ getVal(selectedAsset, ['LICENSE NO', 'License No', 'LICENSE', 'No Polisi']) }}</span>
-            </div>
-            <div class="detail-item">
-              <label>Year Made</label>
-              <span>{{ getVal(selectedAsset, ['YEAR MADE', 'Year Made', 'Tahun']) }}</span>
-            </div>
-            <div class="detail-item">
-              <label>Company / Status</label>
-              <span>{{ getVal(selectedAsset, ['COMPANY', 'Company', 'Perusahaan']) }}</span>
-            </div>
-            <div class="detail-item">
-              <label>Department</label>
-              <span>{{ getVal(selectedAsset, ['DEPARTMENT', 'Department', 'Departemen']) }}</span>
-            </div>
-            <div class="detail-item">
-              <label>Location</label>
-              <span>{{ getVal(selectedAsset, ['LOCATION', 'Location', 'Lokasi']) }}</span>
-            </div>
-            <div class="detail-item">
-              <label>Fuel</label>
-              <span>{{ getVal(selectedAsset, ['FUEL', 'Fuel', 'Bahan Bakar']) }}</span>
-            </div>
-            <div class="detail-item">
-              <label>Merek</label>
-              <span>{{ getVal(selectedAsset, ['MEREK', 'Merek', 'Brand']) }}</span>
-            </div>
-            <div class="detail-item">
-              <label>Type-1</label>
-              <span>{{ getVal(selectedAsset, ['TYPE-1', 'Type-1', 'Tipe']) }}</span>
-            </div>
-            <div class="detail-item">
-              <label>Warna</label>
-              <span>{{ getVal(selectedAsset, ['WARNA', 'Warna', 'Color']) }}</span>
-            </div>
-            <div class="detail-item">
-              <label>Name of User</label>
-              <span>{{ getVal(selectedAsset, ['NAME OF THE USER', 'NAME OF USER', 'Name of User', 'User']) }}</span>
-            </div>
-            <div class="detail-item">
-              <label>Masa Berlaku Pajak STNK</label>
-              <span>{{ formatDate(getVal(selectedAsset, ['Masa Berlaku PAJAK STNK', 'MASA BERLAKU PAJAK STNK', 'Pajak STNK'])) }}</span>
-            </div>
-            <div class="detail-item">
-              <label>Nama STNK</label>
-              <span>{{ getVal(selectedAsset, ['Nama STNK', 'NAMA STNK']) }}</span>
-            </div>
-            <div class="detail-item">
-              <label>Nomor Mesin</label>
-              <span>{{ getVal(selectedAsset, ['Nomor Mesin', 'NOMOR MESIN']) }}</span>
-            </div>
-            <div class="detail-item">
-              <label>Nomor Rangka</label>
-              <span>{{ getVal(selectedAsset, ['Nomor Rangka', 'NOMOR RANGKA']) }}</span>
-            </div>
+        <div class="modal-body-grid" v-if="selectedAsset">
+          <div class="info-card">
+            <span class="info-label">LICENSE NO</span>
+            <span class="info-value">{{ getVal(selectedAsset, ['LICENSE NO', 'License No', 'LICENSE', 'No Polisi']) }}</span>
+          </div>
+          <div class="info-card">
+            <span class="info-label">YEAR MADE</span>
+            <span class="info-value">{{ getVal(selectedAsset, ['YEAR MADE', 'Year Made', 'Tahun']) }}</span>
+          </div>
+          <div class="info-card">
+            <span class="info-label">COMPANY / STATUS</span>
+            <span class="info-value">{{ getVal(selectedAsset, ['COMPANY', 'Company', 'Perusahaan']) }}</span>
+          </div>
+          <div class="info-card">
+            <span class="info-label">DEPARTMENT</span>
+            <span class="info-value">{{ getVal(selectedAsset, ['DEPARTMENT', 'Department', 'Departemen']) }}</span>
+          </div>
+          <div class="info-card">
+            <span class="info-label">LOCATION</span>
+            <span class="info-value">{{ getVal(selectedAsset, ['LOCATION', 'Location', 'Lokasi']) }}</span>
+          </div>
+          <div class="info-card">
+            <span class="info-label">FUEL</span>
+            <span class="info-value">{{ getVal(selectedAsset, ['FUEL', 'Fuel', 'Bahan Bakar']) }}</span>
+          </div>
+          <div class="info-card">
+            <span class="info-label">MEREK</span>
+            <span class="info-value">{{ getVal(selectedAsset, ['MEREK', 'Merek', 'Brand']) }}</span>
+          </div>
+          <div class="info-card">
+            <span class="info-label">TYPE-1</span>
+            <span class="info-value">{{ getVal(selectedAsset, ['TYPE-1', 'Type-1', 'Tipe']) }}</span>
+          </div>
+          <div class="info-card">
+            <span class="info-label">WARNA</span>
+            <span class="info-value">{{ getVal(selectedAsset, ['WARNA', 'Warna', 'Color']) }}</span>
+          </div>
+          <div class="info-card">
+            <span class="info-label">NAME OF USER</span>
+            <span class="info-value">{{ getVal(selectedAsset, ['NAME OF THE USER', 'NAME OF USER', 'Name of User', 'User']) }}</span>
+          </div>
+          <div class="info-card">
+            <span class="info-label">MASA BERLAKU PAJAK STNK</span>
+            <span class="info-value">{{ formatDate(getVal(selectedAsset, ['Masa Berlaku PAJAK STNK', 'MASA BERLAKU PAJAK STNK', 'Pajak STNK'])) }}</span>
+          </div>
+          <div class="info-card">
+            <span class="info-label">NAMA STNK</span>
+            <span class="info-value">{{ getVal(selectedAsset, ['Nama STNK', 'NAMA STNK']) }}</span>
+          </div>
+          <div class="info-card">
+            <span class="info-label">NOMOR MESIN</span>
+            <span class="info-value">{{ getVal(selectedAsset, ['Nomor Mesin', 'NOMOR MESIN']) }}</span>
+          </div>
+          <div class="info-card">
+            <span class="info-label">NOMOR RANGKA</span>
+            <span class="info-value">{{ getVal(selectedAsset, ['Nomor Rangka', 'NOMOR RANGKA']) }}</span>
           </div>
         </div>
       </div>
@@ -275,14 +230,23 @@ const viewMode = ref('data')
 const showModal = ref(false)
 const selectedAsset = ref(null)
 
-// Spreadsheet ID & GID untuk Tab Asset Car
 const spreadsheetId = '1YQSq9tFrGZmm7Z1x_8zn5yY7qeM2EmHNxSjJT4vj5UQ'
 const gidAssetCar = '117909656'
 
 const chartColors = [
-  '#0d1b7a', '#2563eb', '#3b82f6', '#60a5fa', 
-  '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', 
-  '#ec4899', '#06b6d4', '#64748b', '#a855f7'
+  '#2563eb', '#10b981', '#f59e0b', '#ef4444', 
+  '#8b5cf6', '#06b6d4', '#ec4899', '#6366f1', 
+  '#14b8a6', '#f97316', '#84cc16', '#a855f7',
+  '#64748b', '#0284c7', '#d97706', '#dc2626'
+]
+
+const chartCategories = [
+  { title: 'Department', keys: ['DEPARTMENT', 'Department', 'Departemen'] },
+  { title: 'Location', keys: ['LOCATION', 'Location', 'Lokasi'] },
+  { title: 'Year Made', keys: ['YEAR MADE', 'Year Made', 'Tahun'] },
+  { title: 'Merek', keys: ['MEREK', 'Merek', 'Brand'] },
+  { title: 'Type-1', keys: ['TYPE-1', 'Type-1', 'Tipe'] },
+  { title: 'Fuel', keys: ['FUEL', 'Fuel', 'Bahan Bakar'] }
 ]
 
 const pieOptions = {
@@ -291,7 +255,28 @@ const pieOptions = {
   plugins: {
     legend: {
       display: true,
-      position: 'right'
+      position: 'right',
+      labels: {
+        generateLabels: (chart) => {
+          const data = chart.data
+          if (data.labels?.length && data.datasets?.length) {
+            return data.labels.map((label, i) => {
+              const value = data.datasets[0].data[i]
+              const meta = chart.getDatasetMeta(0)
+              const style = meta.controller.getStyle(i)
+              return {
+                text: `${label} (${value})`,
+                fillStyle: style.backgroundColor,
+                strokeStyle: style.borderColor,
+                lineWidth: style.borderWidth,
+                hidden: !chart.isDatasetVisible(0) || meta.data[i]?.hidden,
+                index: i
+              }
+            })
+          }
+          return []
+        }
+      }
     }
   }
 }
@@ -306,17 +291,16 @@ const parseCsvLine = (text) => {
     if (char === '"') {
       inQuotes = !inQuotes
     } else if (char === ',' && !inQuotes) {
-      result.push(entry.replace(/^"|"$/g, ''))
+      result.push(entry.replace(/^"|"$/g, '').trim())
       entry = ''
     } else {
       entry += char
     }
   }
-  result.push(entry.replace(/^"|"$/g, ''))
+  result.push(entry.replace(/^"|"$/g, '').trim())
   return result
 }
 
-// Fungsi Load Data langsung dari Google Sheets CSV
 const loadExcelData = async () => {
   loading.value = true
   errorMessage.value = ''
@@ -330,19 +314,23 @@ const loadExcelData = async () => {
       throw new Error('Gagal mengambil data dari Google Sheets. Pastikan akses Google Sheets publik.')
     }
 
-    const lines = csvText.split('\n').map(l => l.replace('\r', ''))
+    let cleanCsv = csvText
+    if (cleanCsv.startsWith('\uFEFF')) {
+      cleanCsv = cleanCsv.slice(1)
+    }
+
+    const lines = cleanCsv.split(/\r?\n/).filter(l => l.trim() !== '')
     if (lines.length < 2) {
       assetList.value = []
       return
     }
 
     const rawHeaders = lines.shift() || ''
-    const headers = parseCsvLine(rawHeaders).map(h => h.trim())
+    const headers = parseCsvLine(rawHeaders).map(h => h.replace(/^\uFEFF/, '').trim())
 
     const parsedData = []
 
     lines.forEach(line => {
-      if (line.trim() === '') return
       const rowValues = parseCsvLine(line)
       const item = {}
       
@@ -371,7 +359,6 @@ onMounted(() => {
   loadExcelData()
 })
 
-// Helper fleksibel untuk mengambil nilai field
 const getVal = (item, keys) => {
   if (!item) return '-'
   
@@ -391,7 +378,6 @@ const getVal = (item, keys) => {
   return '-'
 }
 
-// Helper Format Tanggal Pajak STNK
 const formatDate = (val) => {
   if (!val || val === '-' || val === 'undefined') return '-'
   let d = null
@@ -428,11 +414,10 @@ const formatDate = (val) => {
   return String(val)
 }
 
-// Computed Filter Pencarian
 const filteredAssets = computed(() => {
   if (!searchQuery.value) return assetList.value
 
-  const q = searchQuery.value.toLowerCase()
+  const q = searchQuery.value.toLowerCase().trim()
   return assetList.value.filter(item => {
     const location = String(getVal(item, ['LOCATION', 'Location', 'Lokasi'])).toLowerCase()
     const dept = String(getVal(item, ['DEPARTMENT', 'Department', 'Departemen'])).toLowerCase()
@@ -443,7 +428,6 @@ const filteredAssets = computed(() => {
   })
 })
 
-// Generator Data Pie Chart
 const getPieChartData = (columnKeys) => {
   const counts = {}
   filteredAssets.value.forEach(item => {
@@ -452,18 +436,49 @@ const getPieChartData = (columnKeys) => {
     counts[val] = (counts[val] || 0) + 1
   })
 
-  const labels = Object.keys(counts)
+  const isYear = columnKeys.some(k => k.toLowerCase().includes('year') || k.toLowerCase().includes('tahun'))
+
+  const sortedKeys = Object.keys(counts).sort((a, b) => {
+    if (isYear) {
+      const matchA = a.match(/\d+/)
+      const matchB = b.match(/\d+/)
+      if (matchA && matchB) {
+        return parseInt(matchA[0], 10) - parseInt(matchB[0], 10)
+      }
+    }
+    return (counts[b] || 0) - (counts[a] || 0)
+  })
+
   return {
-    labels,
+    labels: sortedKeys,
     datasets: [{
       label: 'Jumlah Unit',
-      data: labels.map(key => counts[key]),
-      backgroundColor: chartColors.slice(0, labels.length)
+      data: sortedKeys.map(key => counts[key]),
+      backgroundColor: chartColors.slice(0, sortedKeys.length)
     }]
   }
 }
 
-// Handler Modal
+const getSummaryStats = (columnKeys) => {
+  const counts = {}
+  let total = 0
+
+  filteredAssets.value.forEach(item => {
+    const rawVal = getVal(item, columnKeys)
+    const val = rawVal !== '-' ? String(rawVal).trim() : 'Lainnya'
+    counts[val] = (counts[val] || 0) + 1
+    total++
+  })
+
+  const sortedByCount = Object.keys(counts).sort((a, b) => (counts[b] || 0) - (counts[a] || 0))
+
+  return {
+    total,
+    topCategory: sortedByCount[0] || '-',
+    topCount: counts[sortedByCount[0] || ''] || 0
+  }
+}
+
 const openModal = (item) => {
   selectedAsset.value = item
   showModal.value = true
@@ -476,81 +491,182 @@ const closeModal = () => {
 </script>
 
 <style scoped>
-.asset-container { 
-  background-color: #f8fafc; 
-  min-height: 100vh; 
+.page-wrapper {
+  min-height: 100vh;
+  background-color: #f1f5f9;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-/* Navbar Style */
-.navbar { 
-  display: flex; 
-  justify-content: space-between; 
-  align-items: center; 
-  padding: 10px 40px; 
-  background-color: #ffffff; 
-  border-bottom: 1px solid #ddd; 
+/* Navbar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 48px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
-.nav-logo { height: 45px; }
-.nav-menu { display: flex; align-items: center; gap: 15px; }
-.dropdown { position: relative; display: inline-block; }
-.dropdown button { background: none; border: none; font-size: 13px; cursor: pointer; color: #333; padding: 4px; font-weight: 500; }
-.dropdown-content { display: none; position: absolute; background-color: #ffffff; min-width: 170px; box-shadow: 0px 4px 12px rgba(0,0,0,0.15); z-index: 10; border-radius: 6px; overflow: hidden; }
-.dropdown-content a { color: #333; padding: 10px 14px; text-decoration: none; display: block; font-size: 12px; }
-.dropdown-content a:hover { background-color: #f1f5f9; color: #0d1b7a; }
-.dropdown:hover .dropdown-content { display: block; }
-.btn-logout { background: #ef4444; color: white; padding: 6px 14px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; }
 
-/* Hero Section */
-.hero-section { width: 100%; height: 250px; overflow: hidden; }
-.hero-bg { width: 100%; height: 100%; object-fit: cover; }
+.nav-logo {
+  height: 42px;
+  object-fit: contain;
+}
 
-/* Search Section & View Toggle */
-.search-section { 
-  max-width: 1000px; 
-  margin: -30px auto 20px auto; 
-  padding: 0 20px; 
-  position: relative; 
-  z-index: 5; 
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-btn {
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+  color: #334155;
+  padding: 8px 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.dropdown-btn:hover {
+  background: #f1f5f9;
+  color: #0d1b7a;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #ffffff;
+  min-width: 190px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  z-index: 20;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  padding: 6px;
+}
+
+.dropdown-content a {
+  color: #475569;
+  padding: 8px 12px;
+  text-decoration: none;
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+.dropdown-content a:hover {
+  background-color: #eff6ff;
+  color: #0d1b7a;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* Banner */
+.hero-banner-container {
+  width: 100%;
+  height: 320px;
+  overflow: hidden;
+  position: relative;
+}
+
+.hero-banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Content Wrapper */
+.content-container {
+  max-width: 1200px;
+  margin: -45px auto 40px auto;
+  padding: 0 16px;
+  position: relative;
+  z-index: 20;
+}
+
+/* Filter & View Toggle Card */
+.filter-card {
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  margin-bottom: 24px;
+  padding: 16px;
 }
 
 .search-bar-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 15px;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
-.search-box { 
-  display: flex; 
-  background: white; 
-  border-radius: 6px; 
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
-  overflow: hidden; 
+.search-input-group {
+  display: flex;
   flex: 1;
-  min-width: 300px;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  overflow: hidden;
+  min-width: 280px;
 }
-.input-search { flex: 1; border: none; padding: 14px 18px; font-size: 13px; outline: none; }
-.btn-search { background: white; border: none; padding: 0 20px; cursor: pointer; font-size: 16px; }
 
-/* Toggle Button Data / Diagram */
+.input-field {
+  width: 100%;
+  padding: 12px 18px;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  color: #374151;
+}
+
+.btn-search-icon {
+  background: transparent;
+  border: none;
+  padding: 12px 18px;
+  color: #0d1b7a;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+/* Toggle Mode Data / Diagram */
 .view-toggle {
   display: flex;
-  background: #ffffff;
-  border-radius: 6px;
-  padding: 3px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 4px;
+  border: 1px solid #cbd5e1;
 }
 
 .toggle-btn {
   border: none;
   background: transparent;
   padding: 8px 16px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  color: #64748b;
+  color: #475569;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 6px;
+  transition: all 0.2s;
 }
 
 .toggle-btn.active {
@@ -558,75 +674,262 @@ const closeModal = () => {
   color: #ffffff;
 }
 
-/* Content Area */
-.content-wrapper { max-width: 1000px; margin: 0 auto 50px auto; padding: 0 20px; }
-
-/* Table Component */
-.table-card { background: #0d1b7a; border-radius: 12px; padding: 24px; color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-.custom-table { width: 100%; border-collapse: collapse; color: white; }
-.custom-table th { text-align: left; font-size: 18px; font-weight: bold; padding: 16px; border-bottom: 2px solid rgba(255,255,255,0.2); }
-.custom-table td { padding: 16px; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-
-/* Alignments */
-.text-center { text-align: center !important; }
-
-.btn-detail { 
-  background: none; 
-  border: none; 
-  color: #93c5fd; 
-  text-decoration: underline; 
-  cursor: pointer; 
-  font-size: 14px; 
-  padding: 0;
-  display: inline-block;
+/* Table Card */
+.table-card {
+  background: #ffffff;
+  border-radius: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
-.btn-detail:hover { color: #ffffff; }
-.no-data { padding: 30px; }
-.loading-text, .error-text { text-align: center; padding: 40px; color: white; font-size: 14px; }
-.error-text { color: #fca5a5; }
 
-/* Diagram Layout */
+.main-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.main-table thead {
+  background-color: #0d1b7a;
+  color: #ffffff;
+}
+
+.main-table th {
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.table-row {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.table-row:hover {
+  background-color: #f8fafc;
+}
+
+.main-table td {
+  padding: 12px 16px;
+}
+
+.text-data {
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.center {
+  text-align: center;
+}
+
+.col-no { width: 5%; text-align: center; }
+.col-location { width: 28%; }
+.col-department { width: 32%; }
+.col-license { width: 25%; }
+.col-aksi { width: 10%; text-align: center; }
+
+/* Tombol Aksi "Lihat Detail" */
+.btn-action {
+  background-color: #ffffff;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: background 0.2s;
+}
+
+.btn-action:hover {
+  background-color: #f1f5f9;
+}
+
+.empty-data {
+  text-align: center;
+  padding: 32px;
+  color: #94a3b8;
+  background-color: #ffffff;
+}
+
+/* Charts Grid */
 .charts-grid {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
 .chart-card {
   background: white;
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 16px;
+  padding: 24px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  border: 1px solid #e2e8f0;
+  border: 2px solid #e2e8f0;
 }
 
-.chart-card h3 {
-  margin: 0 0 15px 0;
-  font-size: 16px;
-  font-weight: 700;
+.chart-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chart-card-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
   color: #0d1b7a;
 }
 
+.chart-meta-info {
+  font-size: 13px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-meta-info strong {
+  color: #0f172a;
+}
+
+.dot { color: #cbd5e1; }
+
 .chart-box {
-  height: 280px;
   position: relative;
+  width: 100%;
+  height: 320px;
 }
 
 /* Modal Styling */
-.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; }
-.modal-card { background: white; width: 92%; max-width: 850px; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3); }
-.modal-header { background: #0d1b7a; color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
-.modal-header h3 { margin: 0; font-size: 16px; font-weight: 700; }
-.btn-close { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
-.modal-body { padding: 24px; max-height: 75vh; overflow-y: auto; }
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 16px;
+}
 
-/* Modal Detail Grid */
-.detail-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-.detail-item { display: flex; flex-direction: column; background: #f8fafc; padding: 10px 12px; border-radius: 6px; border: 1px solid #e2e8f0; }
-.detail-item label { font-size: 10px; color: #64748b; text-transform: uppercase; font-weight: 700; margin-bottom: 3px; }
-.detail-item span { font-size: 13px; color: #0f172a; font-weight: 600; word-break: break-word; }
+.modal-box {
+  background: #ffffff;
+  width: 100%;
+  max-width: 800px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+}
 
+.modal-header-blue {
+  background-color: #0d1b7a;
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #ffffff;
+}
+
+.modal-header-blue h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.btn-close-x {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.btn-close-x:hover {
+  opacity: 1;
+}
+
+.modal-body-grid {
+  padding: 24px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  max-height: 75vh;
+  overflow-y: auto;
+  background-color: #ffffff;
+}
+
+.info-card {
+  background-color: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  word-break: break-word;
+}
+
+.status-msg, .status-error {
+  text-align: center;
+  padding: 32px;
+  color: #64748b;
+  background: #ffffff;
+  border-radius: 8px;
+}
+.status-error { color: #ef4444; }
+
+/* Responsive HP (< 768px) */
 @media (max-width: 768px) {
-  .detail-grid { grid-template-columns: repeat(1, 1fr); }
+  .navbar {
+    padding: 12px 16px;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .nav-menu {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .hero-banner-container {
+    height: 180px;
+  }
+
+  .search-bar-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .modal-body-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 </style>
