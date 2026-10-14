@@ -55,21 +55,21 @@
 
     <!-- Hero Section Banner -->
     <main class="hero-section">
-      <img src="/pabrik.jpeg" alt="Pabrik Charoen Pokphand" class="hero-bg" />
+      <img 
+        src="/pabrik.png" 
+        alt="Pabrik Charoen Pokphand" 
+        class="hero-bg"
+      />
       <div class="hero-overlay"></div>
       
-      <div class="hero-content">
-        <div class="company-badge">
-          <!-- Glass Box Pelindung Teks Sapaan -->
-          <div class="hero-glass-box">
-            <div class="greeting-chip">
-              <span class="greeting-dot"></span>
-              <h2>{{ greetingTime }}, <strong class="user-highlight">{{ userName }}</strong>!</h2>
-            </div>
-            <h1 class="company-title">{{ companyName }}</h1>
-            <p class="company-subtitle">Personalia & General Affairs Portal</p>
-          </div>
+      <!-- Sapaan Presisi Di Pojok Kiri Bawah Banner -->
+      <div class="hero-greeting-box">
+        <div class="greeting-chip">
+          <span class="greeting-dot"></span>
+          <span class="greeting-text">{{ greetingTime }}, <strong>{{ userName }}</strong>! 👋</span>
         </div>
+        <h1 class="company-title">{{ companyName }}</h1>
+        <p class="company-subtitle">Personalia & General Affairs Portal</p>
       </div>
     </main>
 
@@ -244,7 +244,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 
-const userName = ref('Pengguna')
+const userName = ref('Maulana Siddiq')
 const companyName = ref('PT Charoen Pokphand Eastern Indonesia Tbk')
 const greetingTime = ref('Selamat Datang')
 
@@ -407,7 +407,7 @@ const fetchDashboardStats = async () => {
 onMounted(() => {
   showNotificationModal.value = true
 
-  const savedName = localStorage.getItem('user_name') || localStorage.getItem('username') || 'Pengguna'
+  const savedName = localStorage.getItem('user_name') || localStorage.getItem('username') || 'Maulana Siddiq'
   const savedCompany = localStorage.getItem('company_name') || 'PT Charoen Pokphand Eastern Indonesia Tbk'
   
   userName.value = savedName
@@ -558,57 +558,41 @@ const handleLogout = () => {
 }
 
 .hero-bg {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scale(1.02);
-  transition: transform 10s ease;
-}
-
-.hero-section:hover .hero-bg {
-  transform: scale(1.05);
+  z-index: 0;
 }
 
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(13, 27, 122, 0.3) 0%, rgba(13, 27, 122, 0.75) 100%);
+  background: linear-gradient(180deg, rgba(13, 27, 122, 0.2) 0%, rgba(13, 27, 122, 0.8) 100%);
+  z-index: 1;
 }
 
-.hero-content {
-  max-width: 1100px;
-  margin: 0 auto;
-  height: 100%;
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: flex-end;
-  padding: 0 24px 28px 24px;
-}
-
-.company-badge {
-  color: white;
-  width: 100%;
-}
-
-/* Box Pelindung Teks di Atas Banner (Glassmorphism) */
-.hero-glass-box {
-  background: rgba(13, 27, 122, 0.75);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 18px 24px;
-  border-radius: 14px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-  display: inline-block;
-  max-width: 100%;
+.hero-greeting-box {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  z-index: 10;
+  background: rgba(13, 27, 122, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 16px 22px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  max-width: 80%;
 }
 
 .greeting-chip {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .greeting-dot {
@@ -619,31 +603,28 @@ const handleLogout = () => {
   box-shadow: 0 0 8px #fbbf24;
 }
 
-.greeting-chip h2 {
-  font-size: 16px;
-  font-weight: 700;
+.greeting-text {
+  font-size: 15px;
+  font-weight: 600;
   color: #fbbf24;
-  margin: 0;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-.user-highlight {
+.greeting-text strong {
   color: #ffffff;
   font-weight: 800;
 }
 
 .company-title {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 800;
   color: #ffffff;
-  margin: 2px 0 0 0;
-  letter-spacing: -0.5px;
+  margin: 4px 0 0 0;
   line-height: 1.2;
 }
 
 .company-subtitle {
-  margin: 4px 0 0 0;
-  font-size: 13px;
+  margin: 2px 0 0 0;
+  font-size: 12px;
   color: #cbd5e1;
   font-weight: 500;
 }
@@ -804,35 +785,6 @@ const handleLogout = () => {
 
 .stat-card:hover .hover-arrow {
   transform: translateX(4px);
-}
-
-/* Responsive Screen Handling */
-@media screen and (max-width: 768px) {
-  .navbar { padding: 12px 16px; flex-direction: column; gap: 10px; }
-  .nav-menu { flex-wrap: wrap; justify-content: center; }
-  .hero-section { height: 280px; }
-  .hero-glass-box { padding: 14px 18px; width: 100%; }
-  .company-title { font-size: 18px; }
-  .section-header { flex-direction: column; align-items: flex-start; gap: 8px; }
-
-  .dashboard-content {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    margin: 16px auto 24px;
-    padding: 0 12px;
-  }
-
-  .stats-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 12px;
-  }
-
-  .stat-card {
-    width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
-  }
 }
 
 /* Quick Access Section */
@@ -1134,5 +1086,34 @@ const handleLogout = () => {
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.96); }
   to { opacity: 1; transform: scale(1); }
+}
+
+/* Responsive Screen Handling */
+@media screen and (max-width: 768px) {
+  .navbar { padding: 12px 16px; flex-direction: column; gap: 10px; }
+  .nav-menu { flex-wrap: wrap; justify-content: center; }
+  .hero-section { height: 280px; }
+  .hero-greeting-box { left: 16px; bottom: 16px; max-width: 90%; padding: 12px 16px; }
+  .company-title { font-size: 16px; }
+  .section-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+
+  .dashboard-content {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin: 16px auto 24px;
+    padding: 0 12px;
+  }
+
+  .stats-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .stat-card {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
 }
 </style>

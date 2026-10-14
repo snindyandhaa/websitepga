@@ -85,8 +85,6 @@
                   </span>
                 </div>
                 <div class="item-desc">
-                  <span>Status: {{ item.status }}</span> • 
-                  <span>Keterangan: {{ item.keterangan }}</span> • 
                   <span>Dept: {{ item.dept }}</span>
                 </div>
                 <div class="item-date">
@@ -116,7 +114,7 @@
           <input 
             v-model="searchQuery" 
             type="text" 
-            placeholder="Kata Kunci: [Nama] [NIK]" 
+            placeholder="Kata Kunci: [Nama] [NIK] [Position] [Department]" 
             class="input-field"
           />
           <button class="btn-search-icon" aria-label="Cari">
@@ -136,34 +134,48 @@
         <table class="main-table">
           <thead>
             <tr>
+              <th class="col-no center">No</th>
               <th class="col-nama">Nama</th>
               <th class="col-nik">NIK</th>
-              <th class="col-aksi">Aksi</th>
+              <th class="col-umur center">Umur</th>
+              <th class="col-dept">Department</th>
+              <th class="col-pos">Position</th>
+              <th class="col-aksi center">Aksi</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(item, index) in filteredKaryawan" :key="index" class="table-row">
+              <td class="col-no text-data center">{{ index + 1 }}</td>
               <td class="col-nama text-data">
-                {{ getVal(item, ['Nama', 'NAMA', 'Name']) }}
+                {{ getVal(item, ['Nama', 'NAMA', 'Name', 'name']) }}
               </td>
               <td class="col-nik text-data">
-                {{ getVal(item, ['NIK', 'NIP', 'Pers No', 'No ID']) }}
+                {{ getVal(item, ['NIK', 'NIP', 'Pers No', 'No ID', 'nik']) }}
               </td>
-              <td class="col-aksi">
+              <td class="col-umur text-data center">
+                {{ getVal(item, ['Umur', 'UMUR', 'Age', 'age']) }}
+              </td>
+              <td class="col-dept text-data">
+                {{ getVal(item, ['DEPARTMENT', 'Department', 'Departement', 'DEPARTEMENT', 'Dept', 'dept']) }}
+              </td>
+              <td class="col-pos text-data">
+                {{ getVal(item, ['Position', 'POSITION', 'Jabatan', 'position']) }}
+              </td>
+              <td class="col-aksi center">
                 <button @click="openModal(item)" class="btn-action">
                   Lihat Detail
                 </button>
               </td>
             </tr>
             <tr v-if="filteredKaryawan.length === 0">
-              <td colspan="3" class="empty-data">Data karyawan tidak ditemukan.</td>
+              <td colspan="7" class="empty-data">Data karyawan tidak ditemukan.</td>
             </tr>
           </tbody>
         </table>
       </div>
     </main>
 
-    <!-- Modal Detail Karyawan -->
+    <!-- Modal Detail Karyawan (20 Fields Split Left-Right) -->
     <div v-if="showModal && selectedKaryawan" class="modal-overlay" @click.self="closeModal">
       <div class="modal-box">
         <!-- Header Modal Biru Tua -->
@@ -172,11 +184,22 @@
           <button @click="closeModal" class="btn-close-x">&times;</button>
         </div>
 
-        <!-- Body Modal dengan Card Grid -->
-        <div class="modal-body-grid">
-          <div v-for="key in detailKeys" :key="key" class="info-card">
-            <span class="info-label">{{ key.toUpperCase() }}</span>
-            <span class="info-value">{{ getVal(selectedKaryawan, [key]) }}</span>
+        <!-- Body Modal Split 2 Kolom Presisi (Kiri 10 Item, Kanan 10 Item) -->
+        <div class="modal-body-split">
+          <!-- Sisi Kiri (10 Field Utama) -->
+          <div class="modal-col">
+            <div v-for="field in leftDetailFields" :key="field.label" class="info-card">
+              <span class="info-label">{{ field.label.toUpperCase() }}</span>
+              <span class="info-value">{{ getVal(selectedKaryawan, field.keys) }}</span>
+            </div>
+          </div>
+
+          <!-- Sisi Kanan (10 Field Tambahan/Penyesuaian) -->
+          <div class="modal-col">
+            <div v-for="field in rightDetailFields" :key="field.label" class="info-card">
+              <span class="info-label">{{ field.label.toUpperCase() }}</span>
+              <span class="info-value">{{ getVal(selectedKaryawan, field.keys) }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -203,11 +226,32 @@ const errorMessage = ref<string>('')
 const showContractNotifModal = ref<boolean>(true)
 const contractNotifications = ref<any[]>([])
 
-const detailKeys: string[] = [
-  'Nama', 'NIK', 'Status', 'Keterangan', 'Company', 'Divisi', 'Cost Center', 
-  'Join Date', 'Level', 'Birth Date', 'Last Promotion', 
-  'Masa Bakti', 'Umur', 'Gender', 'Major', 'Generation', 
-  'KTP', 'Education', 'DEPARTMENT'
+// Struktur 10 Field Kiri
+const leftDetailFields = [
+  { label: 'Nama', keys: ['Nama', 'NAMA', 'Name', 'name'] },
+  { label: 'KTP', keys: ['KTP', 'ktp', 'No KTP'] },
+  { label: 'Gender', keys: ['Gender', 'GENDER', 'Jenis Kelamin'] },
+  { label: 'Umur', keys: ['Umur', 'UMUR', 'Age', 'age'] },
+  { label: 'Birth Date', keys: ['Birth Date', 'BIRTH DATE', 'Tanggal Lahir', 'Tgl Lahir'] },
+  { label: 'Generation', keys: ['Generation', 'GENERATION', 'Generasi'] },
+  { label: 'Level', keys: ['Level', 'LEVEL'] },
+  { label: 'Education', keys: ['Education', 'EDUCATION', 'Pendidikan'] },
+  { label: 'Major', keys: ['Major', 'MAJOR', 'Jurusan'] },
+  { label: 'Keterangan', keys: ['Keterangan', 'KETERANGAN', 'Ket', 'REMARKS'] }
+]
+
+// Struktur 10 Field Kanan
+const rightDetailFields = [
+  { label: 'NIK', keys: ['NIK', 'NIP', 'Pers No', 'No ID', 'nik'] },
+  { label: 'Company', keys: ['Company', 'COMPANY', 'Perusahaan'] },
+  { label: 'Divisi', keys: ['Divisi', 'DIVISI', 'Division'] },
+  { label: 'Department', keys: ['DEPARTMENT', 'Department', 'Departement', 'DEPARTEMENT', 'Dept'] },
+  { label: 'Position', keys: ['Position', 'POSITION', 'Jabatan'] },
+  { label: 'Cost Center', keys: ['Cost Center', 'COST CENTER', 'CostCenter'] },
+  { label: 'Join Date', keys: ['Join Date', 'JOIN DATE', 'Tanggal Masuk', 'Tgl Masuk'] },
+  { label: 'Masa Bakti', keys: ['Masa Bakti', 'MASA BAKTI', 'Masa Kerja'] },
+  { label: 'Last Promotion', keys: ['Last Promotion', 'LAST PROMOTION', 'Promosi Terakhir'] },
+  { label: 'Status', keys: ['Status', 'STATUS', 'Status Karyawan'] }
 ]
 
 const spreadsheetId = '1YQSq9tFrGZmm7Z1x_8zn5yY7qeM2EmHNxSjJT4vj5UQ'
@@ -349,11 +393,11 @@ const checkContractExpirations = (data: Record<string, any>[]): void => {
 
         if (diffDays <= 60 && diffDays >= -90) {
           notifs.push({
-            nama: getVal(item, ['Nama', 'NAMA', 'Name']),
+            nama: getVal(item, ['Nama', 'NAMA', 'Name', 'name']),
             nik: getVal(item, ['NIK', 'NIP', 'Pers No']),
             status: getVal(item, ['Status', 'STATUS']) || 'Temporary',
             keterangan: getVal(item, ['Keterangan', 'KETERANGAN']) || 'Aktif',
-            dept: getVal(item, ['DEPARTMENT', 'Department', 'Divisi']),
+            dept: getVal(item, ['DEPARTMENT', 'Department', 'Departement', 'DEPARTEMENT', 'Dept']),
             joinDateFormatted: joinDate.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }),
             contractEndFormatted: contractEndDate.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }),
             daysRemaining: diffDays
@@ -408,9 +452,11 @@ const filteredKaryawan = computed(() => {
   if (!q) return currentList
 
   return currentList.filter(item => {
-    const nama = getVal(item, ['Nama', 'NAMA', 'Name']).toLowerCase()
-    const nik = getVal(item, ['NIK', 'NIP', 'Pers No', 'No ID']).toLowerCase()
-    return nama.includes(q) || nik.includes(q)
+    const nama = getVal(item, ['Nama', 'NAMA', 'Name', 'name']).toLowerCase()
+    const nik = getVal(item, ['NIK', 'NIP', 'Pers No', 'No ID', 'nik']).toLowerCase()
+    const pos = getVal(item, ['Position', 'POSITION', 'Jabatan']).toLowerCase()
+    const dept = getVal(item, ['DEPARTMENT', 'Department', 'Departement', 'DEPARTEMENT', 'Dept']).toLowerCase()
+    return nama.includes(q) || nik.includes(q) || pos.includes(q) || dept.includes(q)
   })
 })
 
@@ -575,28 +621,6 @@ const closeModal = (): void => {
   margin-top: 2px;
 }
 
-.notification-footer {
-  padding: 12px 20px;
-  background: #f1f5f9;
-  border-top: 1px solid #e2e8f0;
-  text-align: right;
-}
-
-.btn-close-footer {
-  background: #0d1b7a;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.btn-close-footer:hover {
-  background: #1428a3;
-}
-
 /* Navbar */
 .navbar {
   display: flex;
@@ -675,7 +699,7 @@ const closeModal = (): void => {
   display: block;
 }
 
-/* Hero Banner Full-width */
+/* Banner */
 .hero-banner-container {
   width: 100%;
   height: 320px;
@@ -690,7 +714,7 @@ const closeModal = (): void => {
   object-position: center;
 }
 
-/* Content Area & Search Card Overlay */
+/* Content Area */
 .content-container {
   width: 100%;
   max-width: 1200px;
@@ -786,7 +810,7 @@ const closeModal = (): void => {
 .main-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 500px;
+  min-width: 750px;
 }
 
 .main-table thead {
@@ -795,8 +819,8 @@ const closeModal = (): void => {
 }
 
 .main-table th {
-  padding: 18px 24px;
-  font-size: 18px;
+  padding: 16px 20px;
+  font-size: 15px;
   font-weight: 600;
   text-align: left;
 }
@@ -811,36 +835,37 @@ const closeModal = (): void => {
 }
 
 .main-table td {
-  padding: 16px 24px;
+  padding: 14px 20px;
 }
 
 .text-data {
   color: #1e293b;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
 }
 
-.col-nama { width: 45%; }
-.col-nik { width: 35%; }
+.center { text-align: center; }
 
-th.col-aksi,
-td.col-aksi {
-  width: 20%;
-  text-align: center;
-}
+.col-no { width: 5%; text-align: center; }
+.col-nama { width: 23%; }
+.col-nik { width: 17%; }
+.col-umur { width: 8%; text-align: center; }
+.col-dept { width: 22%; }
+.col-pos { width: 15%; }
+.col-aksi { width: 10%; text-align: center; }
 
 .btn-action {
   background-color: #ffffff;
   color: #1e293b;
   border: 1px solid #cbd5e1;
-  padding: 6px 16px;
+  padding: 6px 14px;
   border-radius: 4px;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   transition: background 0.2s;
-  display: inline-block;
+  white-space: nowrap;
 }
 
 .btn-action:hover {
@@ -854,7 +879,7 @@ td.col-aksi {
   background-color: #ffffff;
 }
 
-/* Custom Modal Design */
+/* Modal Design */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -870,7 +895,7 @@ td.col-aksi {
 .modal-box {
   background: #ffffff;
   width: 100%;
-  max-width: 800px;
+  max-width: 840px;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
@@ -906,21 +931,28 @@ td.col-aksi {
   opacity: 1;
 }
 
-.modal-body-grid {
+/* Modal Split 2 Kolom */
+.modal-body-split {
   padding: 24px;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 20px;
   max-height: 75vh;
   overflow-y: auto;
   background-color: #ffffff;
 }
 
+.modal-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .info-card {
   background-color: #f8fafc;
-  border: 1px solid #f1f5f9;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
-  padding: 14px 16px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -934,7 +966,7 @@ td.col-aksi {
 }
 
 .info-value {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: #0f172a;
   word-break: break-word;
@@ -988,7 +1020,7 @@ td.col-aksi {
     border-radius: 8px 8px 0 0;
   }
 
-  .modal-body-grid {
+  .modal-body-split {
     grid-template-columns: 1fr;
   }
 }

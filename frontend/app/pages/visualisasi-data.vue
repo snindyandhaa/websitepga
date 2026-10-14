@@ -51,47 +51,195 @@
       </nav>
     </header>
 
-    <!-- Controls & Tab Selection -->
+    <!-- Controls Bar & Filter Section -->
     <div class="control-bar">
-      <!-- Tab Kategori Data -->
-      <div class="tabs">
-        <button 
-          :class="['tab-btn', { active: activeTab === 'company' }]" 
-          @click="activeTab = 'company'">
-          Data Company
-        </button>
-        <button 
-          :class="['tab-btn', { active: activeTab === 'masabakti' }]" 
-          @click="activeTab = 'masabakti'">
-          Data Masa Bakti
-        </button>
-        <button 
-          :class="['tab-btn', { active: activeTab === 'education' }]" 
-          @click="activeTab = 'education'">
-          Data Education
-        </button>
-      </div>
-
-      <!-- Fitur Pilihan Jenis Diagram & Filter Wilayah -->
-      <div class="filter-group">
+      <!-- Row Utama: Jenis Diagram & Filter Wilayah -->
+      <div class="top-controls">
         <div class="chart-type-toggle">
           <button 
             :class="['type-btn', { active: chartType === 'bar' }]" 
             @click="chartType = 'bar'">
-            Bar Chart Horizontal
+            Bar Chart Vertikal
           </button>
           <button 
             :class="['type-btn', { active: chartType === 'pie' }]" 
             @click="chartType = 'pie'">
-            Diagram (Pie)
+            Diagram
           </button>
         </div>
 
-        <select v-model="selectedWilayah" @change="loadKaryawanData" class="select-wilayah">
-          <option value="all-karyawan">All Karyawan</option>
-          <option value="sulawesi">Sulawesi Banumapa</option>
-          <option value="kalimantan">Kalimantan</option>
-        </select>
+        <div class="wilayah-selector">
+          <label class="filter-label">Wilayah Data</label>
+          <select v-model="selectedWilayah" @change="loadKaryawanData" class="select-wilayah">
+            <option value="all-karyawan">All Karyawan</option>
+            <option value="sulawesi">Sulawesi Banumapa</option>
+            <option value="kalimantan">Kalimantan</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Card Panel Multi Filter Dropdown Checkbox -->
+      <div class="filter-card" @click.stop>
+        <div class="filter-card-header">
+          <h3>🔍 Filter Visualisasi Data</h3>
+          <button @click="resetFilters" class="btn-reset">Reset Filter</button>
+        </div>
+
+        <div class="filter-grid">
+          <!-- Filter Company -->
+          <div class="filter-item">
+            <label class="filter-label">COMPANY</label>
+            <div class="custom-dropdown">
+              <button class="dropdown-trigger" @click.stop="toggleDropdown('company')">
+                <span>{{ getLabelText(filterCompany, 'Semua Company') }}</span>
+                <span class="arrow">▾</span>
+              </button>
+              <div v-if="openDropdown === 'company'" class="dropdown-popover">
+                <label class="checkbox-option select-all" @click.stop>
+                  <input type="checkbox" :checked="filterCompany.length === optionLists.company.length" @change="toggleSelectAll('company', optionLists.company)" />
+                  <strong>Pilih Semua</strong>
+                </label>
+                <div class="popover-divider"></div>
+                <label v-for="item in optionLists.company" :key="item" class="checkbox-option" @click.stop>
+                  <input type="checkbox" :value="item" v-model="filterCompany" />
+                  <span>{{ item }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter Divisi -->
+          <div class="filter-item">
+            <label class="filter-label">DIVISI / DIVISION</label>
+            <div class="custom-dropdown">
+              <button class="dropdown-trigger" @click.stop="toggleDropdown('divisi')">
+                <span>{{ getLabelText(filterDivisi, 'Semua Divisi') }}</span>
+                <span class="arrow">▾</span>
+              </button>
+              <div v-if="openDropdown === 'divisi'" class="dropdown-popover">
+                <label class="checkbox-option select-all" @click.stop>
+                  <input type="checkbox" :checked="filterDivisi.length === optionLists.divisi.length" @change="toggleSelectAll('divisi', optionLists.divisi)" />
+                  <strong>Pilih Semua</strong>
+                </label>
+                <div class="popover-divider"></div>
+                <label v-for="item in optionLists.divisi" :key="item" class="checkbox-option" @click.stop>
+                  <input type="checkbox" :value="item" v-model="filterDivisi" />
+                  <span>{{ item }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter Department -->
+          <div class="filter-item">
+            <label class="filter-label">DEPARTMENT</label>
+            <div class="custom-dropdown">
+              <button class="dropdown-trigger" @click.stop="toggleDropdown('dept')">
+                <span>{{ getLabelText(filterDept, 'Semua Department') }}</span>
+                <span class="arrow">▾</span>
+              </button>
+              <div v-if="openDropdown === 'dept'" class="dropdown-popover">
+                <label class="checkbox-option select-all" @click.stop>
+                  <input type="checkbox" :checked="filterDept.length === optionLists.dept.length" @change="toggleSelectAll('dept', optionLists.dept)" />
+                  <strong>Pilih Semua</strong>
+                </label>
+                <div class="popover-divider"></div>
+                <label v-for="item in optionLists.dept" :key="item" class="checkbox-option" @click.stop>
+                  <input type="checkbox" :value="item" v-model="filterDept" />
+                  <span>{{ item }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter Level -->
+          <div class="filter-item">
+            <label class="filter-label">LEVEL</label>
+            <div class="custom-dropdown">
+              <button class="dropdown-trigger" @click.stop="toggleDropdown('level')">
+                <span>{{ getLabelText(filterLevel, 'Semua Level') }}</span>
+                <span class="arrow">▾</span>
+              </button>
+              <div v-if="openDropdown === 'level'" class="dropdown-popover">
+                <label class="checkbox-option select-all" @click.stop>
+                  <input type="checkbox" :checked="filterLevel.length === optionLists.level.length" @change="toggleSelectAll('level', optionLists.level)" />
+                  <strong>Pilih Semua</strong>
+                </label>
+                <div class="popover-divider"></div>
+                <label v-for="item in optionLists.level" :key="item" class="checkbox-option" @click.stop>
+                  <input type="checkbox" :value="item" v-model="filterLevel" />
+                  <span>{{ item }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter Cost Center -->
+          <div class="filter-item">
+            <label class="filter-label">COST CENTER</label>
+            <div class="custom-dropdown">
+              <button class="dropdown-trigger" @click.stop="toggleDropdown('costCenter')">
+                <span>{{ getLabelText(filterCostCenter, 'Semua Cost Center') }}</span>
+                <span class="arrow">▾</span>
+              </button>
+              <div v-if="openDropdown === 'costCenter'" class="dropdown-popover">
+                <label class="checkbox-option select-all" @click.stop>
+                  <input type="checkbox" :checked="filterCostCenter.length === optionLists.costCenter.length" @change="toggleSelectAll('costCenter', optionLists.costCenter)" />
+                  <strong>Pilih Semua</strong>
+                </label>
+                <div class="popover-divider"></div>
+                <label v-for="item in optionLists.costCenter" :key="item" class="checkbox-option" @click.stop>
+                  <input type="checkbox" :value="item" v-model="filterCostCenter" />
+                  <span>{{ item }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter Bulan Join -->
+          <div class="filter-item">
+            <label class="filter-label">BULAN JOIN</label>
+            <div class="custom-dropdown">
+              <button class="dropdown-trigger" @click.stop="toggleDropdown('bulan')">
+                <span>{{ getLabelText(filterBulan, 'Semua Bulan') }}</span>
+                <span class="arrow">▾</span>
+              </button>
+              <div v-if="openDropdown === 'bulan'" class="dropdown-popover">
+                <label class="checkbox-option select-all" @click.stop>
+                  <input type="checkbox" :checked="filterBulan.length === monthNames.length" @change="toggleSelectAll('bulan', monthNames)" />
+                  <strong>Pilih Semua</strong>
+                </label>
+                <div class="popover-divider"></div>
+                <label v-for="bln in monthNames" :key="bln" class="checkbox-option" @click.stop>
+                  <input type="checkbox" :value="bln" v-model="filterBulan" />
+                  <span>{{ bln }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter Tahun Join -->
+          <div class="filter-item">
+            <label class="filter-label">TAHUN JOIN</label>
+            <div class="custom-dropdown">
+              <button class="dropdown-trigger" @click.stop="toggleDropdown('tahun')">
+                <span>{{ getLabelText(filterTahun, 'Semua Tahun') }}</span>
+                <span class="arrow">▾</span>
+              </button>
+              <div v-if="openDropdown === 'tahun'" class="dropdown-popover">
+                <label class="checkbox-option select-all" @click.stop>
+                  <input type="checkbox" :checked="filterTahun.length === optionLists.tahun.length" @change="toggleSelectAll('tahun', optionLists.tahun)" />
+                  <strong>Pilih Semua</strong>
+                </label>
+                <div class="popover-divider"></div>
+                <label v-for="yr in optionLists.tahun" :key="yr" class="checkbox-option" @click.stop>
+                  <input type="checkbox" :value="yr" v-model="filterTahun" />
+                  <span>{{ yr }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -106,59 +254,24 @@
       </div>
 
       <template v-else>
-        <!-- TAB 1: DATA COMPANY -->
-        <div v-if="activeTab === 'company'" class="chart-group">
-          <div v-for="col in ['Company', 'Divisi', 'Generation']" :key="col" class="chart-card">
+        <div class="chart-group">
+          <div 
+            v-for="col in allChartColumns" 
+            :key="col.id" 
+            class="chart-card"
+          >
             <div class="chart-card-header">
-              <h2>{{ col === 'Divisi' ? 'Division' : col }}</h2>
+              <h2>{{ col.label }}</h2>
               <div class="chart-meta-info">
-                <span>Total: <strong>{{ getSummaryStats(col).total }} Orang</strong></span>
+                <span>Total: <strong>{{ getSummaryStats(col.id).total }} Orang</strong></span>
                 <span class="dot">•</span>
-                <span>Terbanyak: <strong>{{ getSummaryStats(col).topCategory }} ({{ getSummaryStats(col).topCount }})</strong></span>
+                <span>Terbanyak: <strong>{{ getSummaryStats(col.id).topCategory }} ({{ getSummaryStats(col.id).topCount }})</strong></span>
               </div>
             </div>
 
-            <div class="chart-box" :style="{ height: getChartHeight(col) }">
-              <Bar v-if="chartType === 'bar'" :data="getChartData(col)" :options="getBarOptions(col)" />
-              <Pie v-else :data="getChartData(col)" :options="pieOptions" />
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB 2: DATA MASA BAKTI -->
-        <div v-if="activeTab === 'masabakti'" class="chart-group">
-          <div v-for="col in ['Masa Bakti', 'Level']" :key="col" class="chart-card">
-            <div class="chart-card-header">
-              <h2>{{ col }}</h2>
-              <div class="chart-meta-info">
-                <span>Total: <strong>{{ getSummaryStats(col).total }} Orang</strong></span>
-                <span class="dot">•</span>
-                <span>Terbanyak: <strong>{{ getSummaryStats(col).topCategory }} ({{ getSummaryStats(col).topCount }})</strong></span>
-              </div>
-            </div>
-
-            <div class="chart-box" :style="{ height: getChartHeight(col) }">
-              <Bar v-if="chartType === 'bar'" :data="getChartData(col)" :options="getBarOptions(col)" />
-              <Pie v-else :data="getChartData(col)" :options="pieOptions" />
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB 3: DATA EDUCATION -->
-        <div v-if="activeTab === 'education'" class="chart-group">
-          <div class="chart-card">
-            <div class="chart-card-header">
-              <h2>Education</h2>
-              <div class="chart-meta-info">
-                <span>Total: <strong>{{ getSummaryStats('Education').total }} Orang</strong></span>
-                <span class="dot">•</span>
-                <span>Terbanyak: <strong>{{ getSummaryStats('Education').topCategory }} ({{ getSummaryStats('Education').topCount }})</strong></span>
-              </div>
-            </div>
-
-            <div class="chart-box" :style="{ height: getChartHeight('Education') }">
-              <Bar v-if="chartType === 'bar'" :data="getChartData('Education')" :options="getBarOptions('Education')" />
-              <Pie v-else :data="getChartData('Education')" :options="pieOptions" />
+            <div class="chart-box" :style="{ height: '400px' }">
+              <Bar v-if="chartType === 'bar'" :data="getChartData(col.id)" :options="getBarOptions(col.id)" />
+              <Pie v-else :data="getChartData(col.id)" :options="pieOptions" />
             </div>
           </div>
         </div>
@@ -168,7 +281,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Bar, Pie } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -187,13 +300,69 @@ ChartJS.register(Title, Tooltip, Legend, BarElement, ArcElement, CategoryScale, 
 
 export type KaryawanRow = Record<string, string>
 
-const activeTab = ref<'company' | 'masabakti' | 'education'>('company')
 const chartType = ref<'bar' | 'pie'>('bar')
 const selectedWilayah = ref<string>('all-karyawan')
 const loading = ref<boolean>(true)
 const errorMessage = ref<string>('')
 
-const karyawanList = ref<KaryawanRow[]>([])
+// State Multi-Select Filters
+const filterCompany = ref<string[]>([])
+const filterDivisi = ref<string[]>([])
+const filterDept = ref<string[]>([])
+const filterLevel = ref<string[]>([])
+const filterCostCenter = ref<string[]>([])
+const filterBulan = ref<string[]>([])
+const filterTahun = ref<string[]>([])
+
+const openDropdown = ref<string | null>(null)
+
+const toggleDropdown = (key: string) => {
+  openDropdown.value = openDropdown.value === key ? null : key
+}
+
+const closeAllDropdowns = () => {
+  openDropdown.value = null
+}
+
+const getLabelText = (selectedArr: string[], defaultText: string) => {
+  if (!selectedArr || selectedArr.length === 0) return defaultText
+  if (selectedArr.length === 1) return selectedArr[0]
+  return `${selectedArr.length} Terpilih`
+}
+
+const toggleSelectAll = (filterKey: string, options: string[]) => {
+  let targetRef: any
+  if (filterKey === 'company') targetRef = filterCompany
+  else if (filterKey === 'divisi') targetRef = filterDivisi
+  else if (filterKey === 'dept') targetRef = filterDept
+  else if (filterKey === 'level') targetRef = filterLevel
+  else if (filterKey === 'costCenter') targetRef = filterCostCenter
+  else if (filterKey === 'bulan') targetRef = filterBulan
+  else if (filterKey === 'tahun') targetRef = filterTahun
+
+  if (targetRef.value.length === options.length) {
+    targetRef.value = []
+  } else {
+    targetRef.value = [...options]
+  }
+}
+
+const rawKaryawanList = ref<KaryawanRow[]>([])
+
+const monthNames = [
+  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+]
+
+const allChartColumns = [
+  { id: 'Company', label: 'Company' },
+  { id: 'Divisi', label: 'Division / Divisi' },
+  { id: 'Level', label: 'Level Karyawan' },
+  { id: 'Umur', label: 'Kategori Usia Karyawan' },
+  { id: 'Generation', label: 'Generation' },
+  { id: 'Masa Bakti', label: 'Kategori Masa Bakti' },
+  { id: 'Education', label: 'Education / Pendidikan' }
+]
 
 const chartColors: string[] = [
   '#2563eb', '#10b981', '#f59e0b', '#ef4444', 
@@ -202,7 +371,6 @@ const chartColors: string[] = [
   '#64748b', '#0284c7', '#d97706', '#dc2626'
 ]
 
-// Urutan Tingkat Pendidikan (S3 s/d SD)
 const eduOrder = [
   'STRATA 3', 'S3', 'DOCTOR',
   'STRATA 2', 'S2', 'MAGISTER',
@@ -222,27 +390,25 @@ const getEduRank = (label: string): number => {
   return idx !== -1 ? idx : 999
 }
 
-// Konfigurasi Bar Chart Dinamis Sesuai Jumlah Kategori
 const getBarOptions = (columnName: string): ChartOptions<'bar'> => {
   return {
     responsive: true,
     maintainAspectRatio: false,
-    indexAxis: 'y',
+    indexAxis: 'x',
     plugins: {
       legend: { display: false }
     },
     scales: {
-      x: { 
-        beginAtZero: true,
-        ticks: {
-          stepSize: 1,
-          precision: 0
-        }
-      },
       y: { 
+        beginAtZero: true,
+        ticks: { stepSize: 1, precision: 0 }
+      },
+      x: { 
         grid: { display: false },
-        ticks: {
-          autoSkip: false // Memastikan semua label ditampilkan tanpa terlewat
+        ticks: { 
+          autoSkip: false,
+          maxRotation: 45,
+          minRotation: 0
         }
       }
     }
@@ -308,42 +474,79 @@ const parseCsvLine = (text: string): string[] => {
   return result
 }
 
-const getPropertyValue = (item: KaryawanRow, columnName: string): string => {
+const getPropertyValueByAliases = (item: KaryawanRow, aliases: string[]): string => {
   if (!item) return 'Tidak Terdata'
 
   const normalize = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '')
-  const targetNorm = normalize(columnName)
+  const itemKeys = Object.keys(item)
 
-  for (const key in item) {
-    if (normalize(key) === targetNorm) {
-      const val = item[key]
-      if (val !== undefined && val !== null && String(val).trim() !== '') {
-        return String(val).trim()
-      }
+  for (const alias of aliases) {
+    const targetNorm = normalize(alias)
+    const foundKey = itemKeys.find(k => normalize(k) === targetNorm)
+    if (foundKey && item[foundKey] !== undefined && item[foundKey] !== null && String(item[foundKey]).trim() !== '') {
+      return String(item[foundKey]).trim()
     }
   }
 
   return 'Tidak Terdata'
 }
 
-const calculateMasaBaktiFromJoinDate = (joinDateStr: string): string => {
-  if (!joinDateStr || joinDateStr === '-') return '0 Tahun'
-  const parts = joinDateStr.split(/[\/\-]/)
+const getPropertyValue = (item: KaryawanRow, columnName: string): string => {
+  return getPropertyValueByAliases(item, [columnName])
+}
+
+const parseDateObj = (dateStr: string): Date | null => {
+  if (!dateStr || dateStr === '-') return null
+  const parts = dateStr.trim().split(/[\/\-]/)
   if (parts.length === 3) {
     const day = parseInt(parts[0] || '0', 10)
     const month = parseInt(parts[1] || '0', 10) - 1
     const year = parseInt(parts[2] || '0', 10)
     if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
-      const joinDate = new Date(year, month, day)
-      const now = new Date()
-      let diff = now.getFullYear() - joinDate.getFullYear()
-      if (now.getMonth() < joinDate.getMonth() || (now.getMonth() === joinDate.getMonth() && now.getDate() < joinDate.getDate())) {
-        diff--
-      }
-      return `${Math.max(0, diff)} Tahun`
+      return new Date(year, month, day)
     }
   }
-  return '0 Tahun'
+  const date = new Date(dateStr)
+  return isNaN(date.getTime()) ? null : date
+}
+
+const getUsiaRangeGroup = (item: KaryawanRow): string => {
+  const rawAgeVal = getPropertyValueByAliases(item, ['Age', 'Umur', 'Usia', 'AGE', 'UMUR'])
+  const match = rawAgeVal.match(/\d+/)
+  if (!match) return 'Tidak Terdata'
+  
+  const age = parseInt(match[0], 10)
+  if (isNaN(age)) return 'Tidak Terdata'
+
+  if (age >= 15 && age <= 24) return '15-24 Tahun'
+  if (age >= 25 && age <= 40) return '25-40 Tahun'
+  if (age >= 41 && age <= 59) return '41-59 Tahun'
+  if (age >= 60 && age <= 64) return '60-64 Tahun'
+  return '> 64 Tahun'
+}
+
+const getMasaBaktiRangeGroup = (item: KaryawanRow): string => {
+  let rawVal = getPropertyValueByAliases(item, ['Masa Bakti', 'MASA BAKTI', 'Masa Kerja', 'MasaBakti'])
+
+  if (rawVal === 'Tidak Terdata' || rawVal === '-' || rawVal === '' || rawVal.includes('#')) {
+    const joinDateStr = getPropertyValueByAliases(item, ['Join Date', 'JOIN DATE', 'Tanggal Masuk', 'Tgl Masuk'])
+    const d = parseDateObj(joinDateStr)
+    if (!d) return '< 1-2 Tahun'
+    
+    const now = new Date()
+    let diffYears = now.getFullYear() - d.getFullYear()
+    if (now.getMonth() < d.getMonth() || (now.getMonth() === d.getMonth() && now.getDate() < d.getDate())) {
+      diffYears--
+    }
+    rawVal = `${Math.max(0, diffYears)}`
+  }
+
+  const match = rawVal.match(/\d+/)
+  const years = match ? parseInt(match[0], 10) : 0
+
+  if (years <= 2) return '< 1-2 Tahun'
+  if (years >= 3 && years <= 5) return '3-5 Tahun'
+  return '6-10< Tahun'
 }
 
 const loadKaryawanData = async (): Promise<void> => {
@@ -367,7 +570,7 @@ const loadKaryawanData = async (): Promise<void> => {
 
     const lines = cleanCsv.split(/\r?\n/).filter(l => l.trim() !== '')
     if (lines.length < 2) {
-      karyawanList.value = []
+      rawKaryawanList.value = []
       return
     }
 
@@ -391,7 +594,7 @@ const loadKaryawanData = async (): Promise<void> => {
       }
     })
 
-    karyawanList.value = parsedData
+    rawKaryawanList.value = parsedData
 
   } catch (err: any) {
     console.error('Error fetching visualisasi data:', err)
@@ -403,27 +606,117 @@ const loadKaryawanData = async (): Promise<void> => {
 
 onMounted(() => {
   loadKaryawanData()
+  window.addEventListener('click', closeAllDropdowns)
 })
 
-// LOGIKA PENGURUTAN PRESISI DUA ARAH (MASA BAKTI & EDUCATION)
+onUnmounted(() => {
+  window.removeEventListener('click', closeAllDropdowns)
+})
+
+const optionLists = computed(() => {
+  const getUniques = (keys: string[]) => {
+    const set = new Set<string>()
+    rawKaryawanList.value.forEach(item => {
+      keys.forEach(k => {
+        const val = getPropertyValue(item, k)
+        if (val && val !== 'Tidak Terdata') set.add(val)
+      })
+    })
+    return Array.from(set).sort()
+  }
+
+  const yearsSet = new Set<string>()
+  rawKaryawanList.value.forEach(item => {
+    const joinDateStr = getPropertyValueByAliases(item, ['Join Date', 'JOIN DATE', 'Tanggal Masuk'])
+    const d = parseDateObj(joinDateStr)
+    if (d) yearsSet.add(String(d.getFullYear()))
+  })
+
+  return {
+    company: getUniques(['Company', 'COMPANY', 'Perusahaan']),
+    divisi: getUniques(['Divisi', 'DIVISI', 'Division']),
+    dept: getUniques(['DEPARTMENT', 'Department', 'Departement', 'DEPARTEMENT', 'Dept']),
+    level: getUniques(['Level', 'LEVEL']),
+    costCenter: getUniques(['Cost Center', 'COST CENTER', 'CostCenter']),
+    tahun: Array.from(yearsSet).sort((a, b) => Number(b) - Number(a))
+  }
+})
+
+// LOGIKA REAKTIF MULTI-SELECT FILTER
+const filteredKaryawanList = computed(() => {
+  return rawKaryawanList.value.filter(item => {
+    // Multi-Select Company
+    if (filterCompany.value.length > 0) {
+      const c = getPropertyValueByAliases(item, ['Company', 'COMPANY', 'Perusahaan'])
+      if (!filterCompany.value.some(sel => sel.toLowerCase() === c.toLowerCase())) return false
+    }
+
+    // Multi-Select Divisi
+    if (filterDivisi.value.length > 0) {
+      const d = getPropertyValueByAliases(item, ['Divisi', 'DIVISI', 'Division'])
+      if (!filterDivisi.value.some(sel => sel.toLowerCase() === d.toLowerCase())) return false
+    }
+
+    // Multi-Select Department
+    if (filterDept.value.length > 0) {
+      const dept = getPropertyValueByAliases(item, ['DEPARTMENT', 'Department', 'Departement', 'DEPARTEMENT', 'Dept'])
+      if (!filterDept.value.some(sel => sel.toLowerCase() === dept.toLowerCase())) return false
+    }
+
+    // Multi-Select Level
+    if (filterLevel.value.length > 0) {
+      const lvl = getPropertyValueByAliases(item, ['Level', 'LEVEL'])
+      if (!filterLevel.value.some(sel => sel.toLowerCase() === lvl.toLowerCase())) return false
+    }
+
+    // Multi-Select Cost Center
+    if (filterCostCenter.value.length > 0) {
+      const cc = getPropertyValueByAliases(item, ['Cost Center', 'COST CENTER', 'CostCenter'])
+      if (!filterCostCenter.value.some(sel => sel.toLowerCase() === cc.toLowerCase())) return false
+    }
+
+    const joinDateStr = getPropertyValueByAliases(item, ['Join Date', 'JOIN DATE', 'Tanggal Masuk'])
+    const dateObj = parseDateObj(joinDateStr)
+
+    // Multi-Select Bulan
+    if (filterBulan.value.length > 0) {
+      if (!dateObj) return false
+      const blnName = monthNames[dateObj.getMonth()]
+      if (!filterBulan.value.includes(blnName)) return false
+    }
+
+    // Multi-Select Tahun
+    if (filterTahun.value.length > 0) {
+      if (!dateObj) return false
+      if (!filterTahun.value.includes(String(dateObj.getFullYear()))) return false
+    }
+
+    return true
+  })
+})
+
+const resetFilters = () => {
+  filterCompany.value = []
+  filterDivisi.value = []
+  filterDept.value = []
+  filterLevel.value = []
+  filterCostCenter.value = []
+  filterBulan.value = []
+  filterTahun.value = []
+}
+
 const getChartData = (columnName: string): ChartData<'bar' | 'pie'> => {
   const counts: Record<string, number> = {}
 
-  karyawanList.value.forEach(item => {
-    let rawVal = getPropertyValue(item, columnName)
+  filteredKaryawanList.value.forEach(item => {
+    let rawVal = ''
 
     if (columnName.toLowerCase().includes('masabakti') || columnName.toLowerCase().includes('masa bakti')) {
-      if (rawVal === 'Tidak Terdata' || rawVal === '-' || rawVal === '' || rawVal.includes('#')) {
-        const joinDate = getPropertyValue(item, 'Join Date')
-        rawVal = calculateMasaBaktiFromJoinDate(joinDate)
-      } else {
-        const match = rawVal.match(/\d+/)
-        if (match) {
-          rawVal = `${match[0]} Tahun`
-        } else {
-          rawVal = '0 Tahun'
-        }
-      }
+      rawVal = getMasaBaktiRangeGroup(item)
+    } else if (columnName.toLowerCase().includes('umur') || columnName.toLowerCase().includes('usia')) {
+      rawVal = getUsiaRangeGroup(item)
+    } else {
+      rawVal = getPropertyValue(item, columnName)
     }
 
     counts[rawVal] = (counts[rawVal] ?? 0) + 1
@@ -431,24 +724,22 @@ const getChartData = (columnName: string): ChartData<'bar' | 'pie'> => {
 
   const colLower = columnName.toLowerCase()
   const isEducation = colLower.includes('education') || colLower.includes('pendidikan')
-  const isTimeBased = colLower.includes('generation') || colLower.includes('masabakti') || colLower.includes('masa bakti') || colLower.includes('year') || colLower.includes('tahun')
+  const isUsiaRange = colLower.includes('umur') || colLower.includes('usia')
+  const isMasaBaktiRange = colLower.includes('masabakti') || colLower.includes('masa bakti')
+
+  const ageOrder = ['15-24 Tahun', '25-40 Tahun', '41-59 Tahun', '60-64 Tahun', '> 64 Tahun', 'Tidak Terdata']
+  const masaBaktiOrder = ['< 1-2 Tahun', '3-5 Tahun', '6-10< Tahun', 'Tidak Terdata']
 
   const sortedKeys = Object.keys(counts).sort((a, b) => {
     if (isEducation) {
       return getEduRank(a) - getEduRank(b)
     }
-
-    if (isTimeBased) {
-      const matchA = a.match(/\d+/)
-      const matchB = b.match(/\d+/)
-
-      if (matchA && matchB) {
-        const numA = parseInt(matchA[0], 10)
-        const numB = parseInt(matchB[0], 10)
-        return numA - numB
-      }
+    if (isUsiaRange) {
+      return ageOrder.indexOf(a) - ageOrder.indexOf(b)
     }
-
+    if (isMasaBaktiRange) {
+      return masaBaktiOrder.indexOf(a) - masaBaktiOrder.indexOf(b)
+    }
     return (counts[b] ?? 0) - (counts[a] ?? 0)
   })
 
@@ -465,36 +756,19 @@ const getChartData = (columnName: string): ChartData<'bar' | 'pie'> => {
   }
 }
 
-// MENGHITUNG TINGGI GRAFIK DENGAN DUKUNGAN BANYAK BAR MASA BAKTI
-const getChartHeight = (columnName: string): string => {
-  if (chartType.value === 'pie') return '350px'
-
-  const data = getChartData(columnName)
-  const categoryCount = data.labels?.length || 0
-
-  if (categoryCount > 15) return `${categoryCount * 28}px`
-  return '350px'
-}
-
 const getSummaryStats = (columnName: string) => {
   const counts: Record<string, number> = {}
   let total = 0
 
-  karyawanList.value.forEach(item => {
-    let rawVal = getPropertyValue(item, columnName)
+  filteredKaryawanList.value.forEach(item => {
+    let rawVal = ''
 
     if (columnName.toLowerCase().includes('masabakti') || columnName.toLowerCase().includes('masa bakti')) {
-      if (rawVal === 'Tidak Terdata' || rawVal === '-' || rawVal === '' || rawVal.includes('#')) {
-        const joinDate = getPropertyValue(item, 'Join Date')
-        rawVal = calculateMasaBaktiFromJoinDate(joinDate)
-      } else {
-        const match = rawVal.match(/\d+/)
-        if (match) {
-          rawVal = `${match[0]} Tahun`
-        } else {
-          rawVal = '0 Tahun'
-        }
-      }
+      rawVal = getMasaBaktiRangeGroup(item)
+    } else if (columnName.toLowerCase().includes('umur') || columnName.toLowerCase().includes('usia')) {
+      rawVal = getUsiaRangeGroup(item)
+    } else {
+      rawVal = getPropertyValue(item, columnName)
     }
 
     counts[rawVal] = (counts[rawVal] ?? 0) + 1
@@ -598,82 +872,62 @@ const getSummaryStats = (columnName: string) => {
   display: block;
 }
 
-/* Control & Tabs Bar */
+/* Control & Filter Section */
 .control-bar {
-  max-width: 1000px;
-  margin: 30px auto 20px auto;
+  max-width: 1100px;
+  margin: 24px auto;
   padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.top-controls {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 15px;
-}
-
-.tabs {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.tab-btn {
-  background-color: #f1f5f9;
-  color: #334155;
-  border: 1px solid #cbd5e1;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.tab-btn.active {
-  background-color: #0d1b7a;
-  color: #ffffff;
-  border-color: #0d1b7a;
-}
-
-/* Filter Bar & Toggle Diagram Buttons */
-.filter-group {
-  display: flex;
-  align-items: center;
   gap: 12px;
-  flex-wrap: wrap;
 }
 
 .chart-type-toggle {
   display: flex;
   background: #e2e8f0;
-  padding: 3px;
-  border-radius: 6px;
+  padding: 4px;
+  border-radius: 8px;
 }
 
 .type-btn {
   background: transparent;
   border: none;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 500;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
   color: #475569;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 6px;
+  transition: all 0.2s;
 }
 
 .type-btn.active {
   background: #ffffff;
   color: #0d1b7a;
-  font-weight: 700;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.wilayah-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .select-wilayah {
   background-color: #0d1b7a;
   color: white;
   border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-size: 12px;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 13px;
   font-weight: 600;
   outline: none;
   cursor: pointer;
@@ -684,9 +938,130 @@ const getSummaryStats = (columnName: string) => {
   color: #1e293b;
 }
 
+/* Filter Card Panel */
+.filter-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+}
+
+.filter-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.filter-card-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0d1b7a;
+}
+
+.btn-reset {
+  background-color: #f1f5f9;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-reset:hover {
+  background-color: #fee2e2;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Custom Dropdown Styling (Single Line dengan Popover Centang) */
+.custom-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.dropdown-trigger {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+}
+
+.dropdown-trigger:focus {
+  border-color: #0d1b7a;
+}
+
+.dropdown-popover {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100;
+  padding: 6px;
+}
+
+.checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  font-size: 12px;
+  color: #334155;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.checkbox-option:hover {
+  background-color: #f1f5f9;
+}
+
+.popover-divider {
+  height: 1px;
+  background-color: #e2e8f0;
+  margin: 4px 0;
+}
+
 /* Chart Container Cards */
 .charts-wrapper {
-  max-width: 1000px;
+  max-width: 1100px;
   margin: 0 auto 50px auto;
   padding: 0 20px;
   box-sizing: border-box;
@@ -768,14 +1143,11 @@ const getSummaryStats = (columnName: string) => {
   }
 
   .control-bar {
-    flex-direction: column;
-    align-items: stretch;
     padding: 0 16px;
-    margin-top: 16px;
   }
 
-  .filter-group {
-    justify-content: space-between;
+  .filter-grid {
+    grid-template-columns: 1fr;
   }
 
   .charts-wrapper {
