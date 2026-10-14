@@ -55,7 +55,7 @@
 
     <!-- Banner Hero Section -->
     <section class="hero-section">
-      <img src="/pabrik.jpeg" alt="Pabrik Header" class="hero-bg" />
+      <img src="/pabrik.png" alt="Pabrik Header" class="hero-bg" />
     </section>
 
     <!-- Search Box Overlay & Switch Mode (Data / Diagram) -->
