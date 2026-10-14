@@ -81,7 +81,7 @@
       <!-- Card Panel Multi Filter Dropdown Checkbox -->
       <div class="filter-card" @click.stop>
         <div class="filter-card-header">
-          <h3>🔍 Filter Visualisasi Data</h3>
+          <h3>🔍 Filter Visualisasi Data (Karyawan Aktif)</h3>
           <button @click="resetFilters" class="btn-reset">Reset Filter</button>
         </div>
 
@@ -613,10 +613,26 @@ onUnmounted(() => {
   window.removeEventListener('click', closeAllDropdowns)
 })
 
+// HELPER PENCEK STATUS AKTIF (Termasuk Kolom 'Keterangan' dari Excel/Sheets)
+const isStatusAktif = (item: KaryawanRow): boolean => {
+  const statusVal = getPropertyValueByAliases(item, [
+    'Keterangan', 'KETERANGAN', 'Status Karyawan', 'STATUS KARYAWAN', 'Status', 'STATUS'
+  ]).toLowerCase().trim()
+
+  // Jika kolom keterangan kosong/tidak terdata, anggap aktif
+  if (!statusVal || statusVal === 'tidak terdata') return true
+
+  // Harus mengandung 'aktif' dan BUKAN 'non-aktif' atau 'tidak aktif'
+  return statusVal.includes('aktif') && !statusVal.includes('non') && !statusVal.includes('tidak')
+}
+
+// OPTION LISTS UNTUK DROPDOWN
 const optionLists = computed(() => {
+  const activeOnly = rawKaryawanList.value.filter(isStatusAktif)
+
   const getUniques = (keys: string[]) => {
     const set = new Set<string>()
-    rawKaryawanList.value.forEach(item => {
+    activeOnly.forEach(item => {
       keys.forEach(k => {
         const val = getPropertyValue(item, k)
         if (val && val !== 'Tidak Terdata') set.add(val)
@@ -626,7 +642,7 @@ const optionLists = computed(() => {
   }
 
   const yearsSet = new Set<string>()
-  rawKaryawanList.value.forEach(item => {
+  activeOnly.forEach(item => {
     const joinDateStr = getPropertyValueByAliases(item, ['Join Date', 'JOIN DATE', 'Tanggal Masuk'])
     const d = parseDateObj(joinDateStr)
     if (d) yearsSet.add(String(d.getFullYear()))
@@ -642,34 +658,37 @@ const optionLists = computed(() => {
   }
 })
 
-// LOGIKA REAKTIF MULTI-SELECT FILTER
+// LOGIKA REAKTIF MULTI-SELECT FILTER + PENYARINGAN STATUS AKTIF
 const filteredKaryawanList = computed(() => {
   return rawKaryawanList.value.filter(item => {
-    // Multi-Select Company
+    // 1. FILTER KHUSUS STATUS KARYAWAN AKTIF (MEMBACA KOLOM 'KETERANGAN')
+    if (!isStatusAktif(item)) return false
+
+    // 2. Multi-Select Company
     if (filterCompany.value.length > 0) {
       const c = getPropertyValueByAliases(item, ['Company', 'COMPANY', 'Perusahaan'])
       if (!filterCompany.value.some(sel => sel.toLowerCase() === c.toLowerCase())) return false
     }
 
-    // Multi-Select Divisi
+    // 3. Multi-Select Divisi
     if (filterDivisi.value.length > 0) {
       const d = getPropertyValueByAliases(item, ['Divisi', 'DIVISI', 'Division'])
       if (!filterDivisi.value.some(sel => sel.toLowerCase() === d.toLowerCase())) return false
     }
 
-    // Multi-Select Department
+    // 4. Multi-Select Department
     if (filterDept.value.length > 0) {
       const dept = getPropertyValueByAliases(item, ['DEPARTMENT', 'Department', 'Departement', 'DEPARTEMENT', 'Dept'])
       if (!filterDept.value.some(sel => sel.toLowerCase() === dept.toLowerCase())) return false
     }
 
-    // Multi-Select Level
+    // 5. Multi-Select Level
     if (filterLevel.value.length > 0) {
       const lvl = getPropertyValueByAliases(item, ['Level', 'LEVEL'])
       if (!filterLevel.value.some(sel => sel.toLowerCase() === lvl.toLowerCase())) return false
     }
 
-    // Multi-Select Cost Center
+    // 6. Multi-Select Cost Center
     if (filterCostCenter.value.length > 0) {
       const cc = getPropertyValueByAliases(item, ['Cost Center', 'COST CENTER', 'CostCenter'])
       if (!filterCostCenter.value.some(sel => sel.toLowerCase() === cc.toLowerCase())) return false
@@ -678,14 +697,14 @@ const filteredKaryawanList = computed(() => {
     const joinDateStr = getPropertyValueByAliases(item, ['Join Date', 'JOIN DATE', 'Tanggal Masuk'])
     const dateObj = parseDateObj(joinDateStr)
 
-    // Multi-Select Bulan
+    // 7. Multi-Select Bulan
     if (filterBulan.value.length > 0) {
       if (!dateObj) return false
       const blnName = monthNames[dateObj.getMonth()]
       if (!filterBulan.value.includes(blnName)) return false
     }
 
-    // Multi-Select Tahun
+    // 8. Multi-Select Tahun
     if (filterTahun.value.length > 0) {
       if (!dateObj) return false
       if (!filterTahun.value.includes(String(dateObj.getFullYear()))) return false
@@ -997,7 +1016,7 @@ const getSummaryStats = (columnName: string) => {
   letter-spacing: 0.5px;
 }
 
-/* Custom Dropdown Styling (Single Line dengan Popover Centang) */
+/* Custom Dropdown Styling */
 .custom-dropdown {
   position: relative;
   width: 100%;
