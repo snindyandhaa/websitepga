@@ -1,6 +1,6 @@
 <template>
   <div class="asset-container">
-    <!-- Navbar Header -->
+    <!-- Navbar Header (3 Dropdown Utama) -->
     <header class="navbar">
       <div class="brand">
         <NuxtLink to="/home">
@@ -9,8 +9,9 @@
       </div>
 
       <nav class="nav-menu">
+        <!-- 1. Data MP -->
         <div class="dropdown">
-          <button>Data MP ▾</button>
+          <button class="dropdown-btn">Data MP ▾</button>
           <div class="dropdown-content">
             <NuxtLink to="/data-karyawan">Data Karyawan</NuxtLink>
             <NuxtLink to="/visualisasi-data">Visualisasi Data</NuxtLink>
@@ -18,38 +19,25 @@
           </div>
         </div>
 
+        <!-- 2. General Affair Asset -->
         <div class="dropdown">
-          <button>General Affair Asset ▾</button>
+          <button class="dropdown-btn">General Affair Asset ▾</button>
           <div class="dropdown-content">
             <NuxtLink to="/asset-car">Asset Car</NuxtLink>
             <NuxtLink to="/asset-pga">Asset PGA</NuxtLink>
           </div>
         </div>
 
+        <!-- 3. More -->
         <div class="dropdown">
-          <button>Asuransi ▾</button>
+          <button class="dropdown-btn">More ▾</button>
           <div class="dropdown-content">
-            <NuxtLink to="/reliance">Reliance</NuxtLink>
+            <NuxtLink to="/data-summary">Data Summary</NuxtLink>
             <NuxtLink to="/bpjs">BPJS</NuxtLink>
           </div>
         </div>
 
-        <div class="dropdown">
-          <button>Recruitment ▾</button>
-          <div class="dropdown-content">
-            <NuxtLink to="/data-summary">Data Summary</NuxtLink>
-          </div>
-        </div>
-
-        <div class="dropdown">
-          <button>More ▾</button>
-          <div class="dropdown-content">
-            <NuxtLink to="/wip-hcga">Work In Progress HC & GA</NuxtLink>
-            <NuxtLink to="/budget-department">Budget Department</NuxtLink>
-          </div>
-        </div>
-
-        <NuxtLink to="/" class="btn-logout">Logout</NuxtLink>
+        <button @click="handleLogout" class="btn-logout">Logout</button>
       </nav>
     </header>
 
@@ -76,7 +64,7 @@
               placeholder="Kata Kunci: [asset] [description]" 
               class="input-search"
             />
-            <button class="btn-search">🔍</button>
+            <button class="btn-search" aria-label="Cari">🔍</button>
           </div>
         </div>
 
@@ -156,7 +144,7 @@
           <button class="btn-close" @click="closeModal">✕</button>
         </div>
 
-        <div class="modal-body" v-if="selectedAsset">
+        <div v-if="selectedAsset" class="modal-body">
           <div class="detail-grid">
             <div class="detail-item">
               <label>No</label>
@@ -330,12 +318,20 @@ const closeModal = () => {
   showModal.value = false
   selectedAsset.value = null
 }
+
+const handleLogout = () => {
+  localStorage.removeItem('user_name')
+  localStorage.removeItem('username')
+  localStorage.removeItem('company_name')
+  navigateTo('/')
+}
 </script>
 
 <style scoped>
 .asset-container {
   background-color: #f8fafc;
   min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Navbar Header */
@@ -343,28 +339,85 @@ const closeModal = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 40px;
+  padding: 12px 48px;
   background-color: #ffffff;
-  border-bottom: 1px solid #ddd;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
-.nav-logo { height: 45px; }
-.nav-menu { display: flex; align-items: center; gap: 15px; }
+
+.nav-logo { height: 42px; object-fit: contain; }
+
+.nav-menu { display: flex; align-items: center; gap: 8px; }
+
 .dropdown { position: relative; }
-.dropdown button { background: none; border: none; font-size: 13px; cursor: pointer; color: #333; font-weight: 500; }
+
+.dropdown-btn {
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+  color: #334155;
+  padding: 8px 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.dropdown-btn:hover { background: #f1f5f9; color: #0d1b7a; }
+
 .dropdown-content {
   display: none;
   position: absolute;
+  top: 100%;
+  left: 0;
   background-color: #ffffff;
-  min-width: 170px;
-  box-shadow: 0px 4px 12px rgba(0,0,0,0.15);
-  z-index: 10;
-  border-radius: 6px;
-  overflow: hidden;
+  min-width: 190px;
+  box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.12);
+  z-index: 20;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  padding: 8px;
 }
-.dropdown-content a { color: #333; padding: 10px 14px; text-decoration: none; display: block; font-size: 12px; }
-.dropdown-content a:hover { background-color: #f1f5f9; color: #0d1b7a; }
+
+.dropdown-content a {
+  color: #475569;
+  padding: 10px 14px;
+  text-decoration: none;
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+
+.dropdown-content a:hover {
+  background-color: #eff6ff;
+  color: #0d1b7a;
+  transform: translateX(3px);
+}
+
 .dropdown:hover .dropdown-content { display: block; }
-.btn-logout { background: #ef4444; color: white; padding: 6px 14px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; }
+
+.btn-logout {
+  background: #ef4444;
+  color: white;
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  margin-left: 10px;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
+  transition: all 0.2s;
+}
+
+.btn-logout:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
 
 /* Hero Banner */
 .hero-section {
@@ -372,6 +425,7 @@ const closeModal = () => {
   height: 250px;
   overflow: hidden;
 }
+
 .hero-bg {
   width: 100%;
   height: 100%;
@@ -398,7 +452,7 @@ const closeModal = () => {
 .search-box-container {
   display: flex;
   background: white;
-  border-radius: 6px;
+  border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   overflow: hidden;
   flex: 1;
@@ -440,8 +494,8 @@ const closeModal = () => {
 .view-toggle {
   display: flex;
   background: #ffffff;
-  border-radius: 6px;
-  padding: 3px;
+  border-radius: 8px;
+  padding: 4px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
@@ -453,7 +507,8 @@ const closeModal = () => {
   font-weight: 600;
   color: #64748b;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 6px;
+  transition: all 0.2s;
 }
 
 .toggle-btn.active {
@@ -485,7 +540,7 @@ const closeModal = () => {
 
 .custom-table th {
   text-align: left;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   padding: 16px;
   border-bottom: 2px solid rgba(255,255,255,0.2);
@@ -548,7 +603,7 @@ const closeModal = () => {
 /* Modal Popup Styling */
 .modal-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  inset: 0;
   background: rgba(0,0,0,0.5);
   display: flex;
   align-items: center;
@@ -615,7 +670,9 @@ const closeModal = () => {
   font-weight: 500;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+  .navbar { padding: 12px 16px; flex-direction: column; gap: 10px; }
+  .nav-menu { flex-wrap: wrap; justify-content: center; }
   .detail-grid { grid-template-columns: 1fr; }
 }
 </style>

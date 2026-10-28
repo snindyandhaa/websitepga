@@ -1,6 +1,5 @@
 <template>
   <div class="home-container">
-    <!-- Navbar Header -->
     <header class="navbar">
       <div class="brand">
         <NuxtLink to="/home">
@@ -27,25 +26,10 @@
         </div>
 
         <div class="dropdown">
-          <button class="dropdown-btn">Asuransi ▾</button>
-          <div class="dropdown-content">
-            <NuxtLink to="/reliance">Reliance</NuxtLink>
-            <NuxtLink to="/bpjs">BPJS</NuxtLink>
-          </div>
-        </div>
-
-        <div class="dropdown">
-          <button class="dropdown-btn">Recruitment ▾</button>
-          <div class="dropdown-content">
-            <NuxtLink to="/data-summary">Data Summary</NuxtLink>
-          </div>
-        </div>
-
-        <div class="dropdown">
           <button class="dropdown-btn">More ▾</button>
           <div class="dropdown-content">
-            <NuxtLink to="/WIPHRA">Work In Progress HC & GA</NuxtLink>
-            <NuxtLink to="/budget-department">Budget Department</NuxtLink>
+            <NuxtLink to="/data-summary">Data Summary</NuxtLink>
+            <NuxtLink to="/bpjs">BPJS</NuxtLink>
           </div>
         </div>
 
@@ -53,7 +37,6 @@
       </nav>
     </header>
 
-    <!-- Hero Section Banner -->
     <main class="hero-section">
       <img 
         src="/pabrik.png" 
@@ -62,7 +45,6 @@
       />
       <div class="hero-overlay"></div>
       
-      <!-- Sapaan Presisi Di Pojok Kiri Bawah Banner -->
       <div class="hero-greeting-box">
         <div class="greeting-chip">
           <span class="greeting-dot"></span>
@@ -73,7 +55,6 @@
       </div>
     </main>
 
-    <!-- Modal Notification STNK Pop-up -->
     <div v-if="showNotificationModal" class="notification-overlay" @click.self="closeNotification">
       <div class="notification-card">
         <div class="notification-header">
@@ -108,7 +89,7 @@
                   </span>
                 </div>
                 <div class="item-desc">
-                  <span>Merek/Tipe: {{ item.merek }} {{ item.type }}</span> • 
+                  <span>Merek/Tipe: {{ item.merek }} {{ item.type }}</span>
                   <span>Pengguna: {{ item.nama }}</span>
                 </div>
                 <div class="item-date">
@@ -127,7 +108,6 @@
       </div>
     </div>
 
-    <!-- Main Dashboard Content -->
     <section class="dashboard-content">
       <div class="section-header">
         <div>
@@ -140,7 +120,6 @@
         </div>
       </div>
 
-      <!-- Stats Grid Cards -->
       <div class="stats-grid">
         <NuxtLink class="stat-card" to="/data-karyawan">
           <div class="stat-card-inner">
@@ -188,11 +167,10 @@
         </NuxtLink>
       </div>
 
-      <!-- Quick Access Section -->
       <div class="quick-section">
         <div class="quick-header">
-          <h3>⚡ Akses Cepat Modul Internal</h3>
-          <span class="quick-badge">5 Modul Utama</span>
+          <h3>⚡ Akses Cepat Modul Utama</h3>
+          <span class="quick-badge">Modul Pilihan</span>
         </div>
 
         <div class="quick-grid">
@@ -212,6 +190,14 @@
             </div>
           </NuxtLink>
 
+          <NuxtLink class="quick-card" to="/employee-rotation">
+            <div class="quick-icon-wrapper">🔄</div>
+            <div class="quick-text">
+              <span class="quick-label">Employee Rotation</span>
+              <span class="quick-desc">Rotasi & Mutasi</span>
+            </div>
+          </NuxtLink>
+
           <NuxtLink class="quick-card" to="/asset-car">
             <div class="quick-icon-wrapper">🚘</div>
             <div class="quick-text">
@@ -225,14 +211,6 @@
             <div class="quick-text">
               <span class="quick-label">Asset PGA</span>
               <span class="quick-desc">Fasilitas & Inventaris</span>
-            </div>
-          </NuxtLink>
-
-          <NuxtLink class="quick-card" to="/WIPHRA">
-            <div class="quick-icon-wrapper">📋</div>
-            <div class="quick-text">
-              <span class="quick-label">Work In Progress</span>
-              <span class="quick-desc">Area Kerja HC & GA</span>
             </div>
           </NuxtLink>
         </div>

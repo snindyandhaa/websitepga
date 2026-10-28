@@ -1,6 +1,6 @@
 <template>
   <div class="page-wrapper">
-    <!-- Navbar -->
+    <!-- Navbar Header (3 Dropdown Utama) -->
     <header class="navbar">
       <div class="brand">
         <NuxtLink to="/home">
@@ -9,6 +9,7 @@
       </div>
 
       <nav class="nav-menu">
+        <!-- 1. Data MP -->
         <div class="dropdown">
           <button class="dropdown-btn">Data MP ▾</button>
           <div class="dropdown-content">
@@ -18,6 +19,7 @@
           </div>
         </div>
 
+        <!-- 2. General Affair Asset -->
         <div class="dropdown">
           <button class="dropdown-btn">General Affair Asset ▾</button>
           <div class="dropdown-content">
@@ -26,26 +28,12 @@
           </div>
         </div>
 
-        <div class="dropdown">
-          <button class="dropdown-btn">Asuransi ▾</button>
-          <div class="dropdown-content">
-            <NuxtLink to="/reliance">Reliance</NuxtLink>
-            <NuxtLink to="/bpjs">BPJS</NuxtLink>
-          </div>
-        </div>
-
-        <div class="dropdown">
-          <button class="dropdown-btn">Recruitment ▾</button>
-          <div class="dropdown-content">
-            <NuxtLink to="/data-summary">Data Summary</NuxtLink>
-          </div>
-        </div>
-
+        <!-- 3. More -->
         <div class="dropdown">
           <button class="dropdown-btn">More ▾</button>
           <div class="dropdown-content">
-            <NuxtLink to="/WIPHRA">Work In Progress HC & GA</NuxtLink>
-            <NuxtLink to="/budget-department">Budget Department</NuxtLink>
+            <NuxtLink to="/data-summary">Data Summary</NuxtLink>
+            <NuxtLink to="/bpjs">BPJS</NuxtLink>
           </div>
         </div>
       </nav>
@@ -175,7 +163,7 @@
       </div>
     </main>
 
-    <!-- Modal Detail Karyawan (20 Fields Split Left-Right) -->
+    <!-- Modal Detail Karyawan -->
     <div v-if="showModal && selectedKaryawan" class="modal-overlay" @click.self="closeModal">
       <div class="modal-box">
         <!-- Header Modal Biru Tua -->
@@ -184,9 +172,9 @@
           <button @click="closeModal" class="btn-close-x">&times;</button>
         </div>
 
-        <!-- Body Modal Split 2 Kolom Presisi (Kiri 10 Item, Kanan 10 Item) -->
+        <!-- Body Modal Split 2 Kolom -->
         <div class="modal-body-split">
-          <!-- Sisi Kiri (10 Field Utama) -->
+          <!-- Sisi Kiri (10 Field) -->
           <div class="modal-col">
             <div v-for="field in leftDetailFields" :key="field.label" class="info-card">
               <span class="info-label">{{ field.label.toUpperCase() }}</span>
@@ -194,7 +182,7 @@
             </div>
           </div>
 
-          <!-- Sisi Kanan (10 Field Tambahan/Penyesuaian) -->
+          <!-- Sisi Kanan (10 Field) -->
           <div class="modal-col">
             <div v-for="field in rightDetailFields" :key="field.label" class="info-card">
               <span class="info-label">{{ field.label.toUpperCase() }}</span>
@@ -226,7 +214,7 @@ const errorMessage = ref<string>('')
 const showContractNotifModal = ref<boolean>(true)
 const contractNotifications = ref<any[]>([])
 
-// Struktur 10 Field Kiri
+// Struktur 10 Field Kiri (Ditambahkan BPJS Ketenagakerjaan)
 const leftDetailFields = [
   { label: 'Nama', keys: ['Nama', 'NAMA', 'Name', 'name'] },
   { label: 'KTP', keys: ['KTP', 'ktp', 'No KTP'] },
@@ -237,10 +225,10 @@ const leftDetailFields = [
   { label: 'Level', keys: ['Level', 'LEVEL'] },
   { label: 'Education', keys: ['Education', 'EDUCATION', 'Pendidikan'] },
   { label: 'Major', keys: ['Major', 'MAJOR', 'Jurusan'] },
-  { label: 'Keterangan', keys: ['Keterangan', 'KETERANGAN', 'Ket', 'REMARKS'] }
+  { label: 'BPJS Ketenagakerjaan', keys: ['BPJS KETENAGAKERJAAN', 'Bpjs Ketenagakerjaan', 'BPJS KETENAGAKERJAAN ', 'NO BPJS KETENAGAKERJAAN', 'BPJS TK'] }
 ]
 
-// Struktur 10 Field Kanan
+// Struktur 10 Field Kanan (Ditambahkan BPJS Kesehatan)
 const rightDetailFields = [
   { label: 'NIK', keys: ['NIK', 'NIP', 'Pers No', 'No ID', 'nik'] },
   { label: 'Company', keys: ['Company', 'COMPANY', 'Perusahaan'] },
@@ -250,7 +238,7 @@ const rightDetailFields = [
   { label: 'Cost Center', keys: ['Cost Center', 'COST CENTER', 'CostCenter'] },
   { label: 'Join Date', keys: ['Join Date', 'JOIN DATE', 'Tanggal Masuk', 'Tgl Masuk'] },
   { label: 'Masa Bakti', keys: ['Masa Bakti', 'MASA BAKTI', 'Masa Kerja'] },
-  { label: 'Last Promotion', keys: ['Last Promotion', 'LAST PROMOTION', 'Promosi Terakhir'] },
+  { label: 'BPJS Kesehatan', keys: ['NO BPJS KESEHATAN', 'No BPJS Kesehatan', 'BPJS Kesehatan', 'BPJS KES', 'NO BPJS'] },
   { label: 'Status', keys: ['Status', 'STATUS', 'Status Karyawan'] }
 ]
 

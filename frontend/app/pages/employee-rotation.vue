@@ -1,6 +1,6 @@
 <template>
   <div class="page-wrapper">
-    <!-- Navbar -->
+    <!-- Navbar Header (3 Dropdown Utama) -->
     <header class="navbar">
       <div class="brand">
         <NuxtLink to="/home">
@@ -9,6 +9,7 @@
       </div>
 
       <nav class="nav-menu">
+        <!-- 1. Data MP -->
         <div class="dropdown">
           <button class="dropdown-btn">Data MP ▾</button>
           <div class="dropdown-content">
@@ -18,6 +19,7 @@
           </div>
         </div>
 
+        <!-- 2. General Affair Asset -->
         <div class="dropdown">
           <button class="dropdown-btn">General Affair Asset ▾</button>
           <div class="dropdown-content">
@@ -26,26 +28,12 @@
           </div>
         </div>
 
-        <div class="dropdown">
-          <button class="dropdown-btn">Asuransi ▾</button>
-          <div class="dropdown-content">
-            <NuxtLink to="/reliance">Reliance</NuxtLink>
-            <NuxtLink to="/bpjs">BPJS</NuxtLink>
-          </div>
-        </div>
-
-        <div class="dropdown">
-          <button class="dropdown-btn">Recruitment ▾</button>
-          <div class="dropdown-content">
-            <NuxtLink to="/data-summary">Data Summary</NuxtLink>
-          </div>
-        </div>
-
+        <!-- 3. More -->
         <div class="dropdown">
           <button class="dropdown-btn">More ▾</button>
           <div class="dropdown-content">
-            <NuxtLink to="/WIPHRA">Work In Progress HC & GA</NuxtLink>
-            <NuxtLink to="/budget-department">Budget Department</NuxtLink>
+            <NuxtLink to="/data-summary">Data Summary</NuxtLink>
+            <NuxtLink to="/bpjs">BPJS</NuxtLink>
           </div>
         </div>
       </nav>

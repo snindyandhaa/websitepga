@@ -1,6 +1,6 @@
 <template>
   <div class="visual-container">
-    <!-- Navbar Header -->
+    <!-- Navbar Header (3 Dropdown Utama) -->
     <header class="navbar">
       <div class="brand">
         <NuxtLink to="/home">
@@ -9,6 +9,7 @@
       </div>
 
       <nav class="nav-menu">
+        <!-- 1. Data MP -->
         <div class="dropdown">
           <button class="dropdown-btn">Data MP ▾</button>
           <div class="dropdown-content">
@@ -18,6 +19,7 @@
           </div>
         </div>
 
+        <!-- 2. General Affair Asset -->
         <div class="dropdown">
           <button class="dropdown-btn">General Affair Asset ▾</button>
           <div class="dropdown-content">
@@ -26,26 +28,12 @@
           </div>
         </div>
 
-        <div class="dropdown">
-          <button class="dropdown-btn">Asuransi ▾</button>
-          <div class="dropdown-content">
-            <NuxtLink to="/reliance">Reliance</NuxtLink>
-            <NuxtLink to="/bpjs">BPJS</NuxtLink>
-          </div>
-        </div>
-
-        <div class="dropdown">
-          <button class="dropdown-btn">Recruitment ▾</button>
-          <div class="dropdown-content">
-            <NuxtLink to="/data-summary">Data Summary</NuxtLink>
-          </div>
-        </div>
-
+        <!-- 3. More -->
         <div class="dropdown">
           <button class="dropdown-btn">More ▾</button>
           <div class="dropdown-content">
-            <NuxtLink to="/WIPHRA">Work In Progress HC & GA</NuxtLink>
-            <NuxtLink to="/budget-department">Budget Department</NuxtLink>
+            <NuxtLink to="/data-summary">Data Summary</NuxtLink>
+            <NuxtLink to="/bpjs">BPJS</NuxtLink>
           </div>
         </div>
       </nav>
@@ -518,11 +506,10 @@ const getUsiaRangeGroup = (item: KaryawanRow): string => {
   const age = parseInt(match[0], 10)
   if (isNaN(age)) return 'Tidak Terdata'
 
-  if (age >= 15 && age <= 24) return '15-24 Tahun'
+  if (age >= 18 && age <= 24) return '18-24 Tahun'
   if (age >= 25 && age <= 40) return '25-40 Tahun'
   if (age >= 41 && age <= 59) return '41-59 Tahun'
-  if (age >= 60 && age <= 64) return '60-64 Tahun'
-  return '> 64 Tahun'
+  return '> 60 Tahun'
 }
 
 const getMasaBaktiRangeGroup = (item: KaryawanRow): string => {
@@ -531,7 +518,7 @@ const getMasaBaktiRangeGroup = (item: KaryawanRow): string => {
   if (rawVal === 'Tidak Terdata' || rawVal === '-' || rawVal === '' || rawVal.includes('#')) {
     const joinDateStr = getPropertyValueByAliases(item, ['Join Date', 'JOIN DATE', 'Tanggal Masuk', 'Tgl Masuk'])
     const d = parseDateObj(joinDateStr)
-    if (!d) return '< 1-2 Tahun'
+    if (!d) return '0-2 Tahun'
     
     const now = new Date()
     let diffYears = now.getFullYear() - d.getFullYear()
@@ -544,9 +531,10 @@ const getMasaBaktiRangeGroup = (item: KaryawanRow): string => {
   const match = rawVal.match(/\d+/)
   const years = match ? parseInt(match[0], 10) : 0
 
-  if (years <= 2) return '< 1-2 Tahun'
+  if (years <= 2) return '0-2 Tahun'
   if (years >= 3 && years <= 5) return '3-5 Tahun'
-  return '6-10< Tahun'
+  if (years >= 6 && years <= 10) return '6-10 Tahun'
+  return '> 10 Tahun'
 }
 
 const loadKaryawanData = async (): Promise<void> => {
@@ -613,20 +601,16 @@ onUnmounted(() => {
   window.removeEventListener('click', closeAllDropdowns)
 })
 
-// HELPER PENCEK STATUS AKTIF (Termasuk Kolom 'Keterangan' dari Excel/Sheets)
 const isStatusAktif = (item: KaryawanRow): boolean => {
   const statusVal = getPropertyValueByAliases(item, [
     'Keterangan', 'KETERANGAN', 'Status Karyawan', 'STATUS KARYAWAN', 'Status', 'STATUS'
   ]).toLowerCase().trim()
 
-  // Jika kolom keterangan kosong/tidak terdata, anggap aktif
   if (!statusVal || statusVal === 'tidak terdata') return true
 
-  // Harus mengandung 'aktif' dan BUKAN 'non-aktif' atau 'tidak aktif'
   return statusVal.includes('aktif') && !statusVal.includes('non') && !statusVal.includes('tidak')
 }
 
-// OPTION LISTS UNTUK DROPDOWN
 const optionLists = computed(() => {
   const activeOnly = rawKaryawanList.value.filter(isStatusAktif)
 
@@ -658,37 +642,30 @@ const optionLists = computed(() => {
   }
 })
 
-// LOGIKA REAKTIF MULTI-SELECT FILTER + PENYARINGAN STATUS AKTIF
 const filteredKaryawanList = computed(() => {
   return rawKaryawanList.value.filter(item => {
-    // 1. FILTER KHUSUS STATUS KARYAWAN AKTIF (MEMBACA KOLOM 'KETERANGAN')
     if (!isStatusAktif(item)) return false
 
-    // 2. Multi-Select Company
     if (filterCompany.value.length > 0) {
       const c = getPropertyValueByAliases(item, ['Company', 'COMPANY', 'Perusahaan'])
       if (!filterCompany.value.some(sel => sel.toLowerCase() === c.toLowerCase())) return false
     }
 
-    // 3. Multi-Select Divisi
     if (filterDivisi.value.length > 0) {
       const d = getPropertyValueByAliases(item, ['Divisi', 'DIVISI', 'Division'])
       if (!filterDivisi.value.some(sel => sel.toLowerCase() === d.toLowerCase())) return false
     }
 
-    // 4. Multi-Select Department
     if (filterDept.value.length > 0) {
       const dept = getPropertyValueByAliases(item, ['DEPARTMENT', 'Department', 'Departement', 'DEPARTEMENT', 'Dept'])
       if (!filterDept.value.some(sel => sel.toLowerCase() === dept.toLowerCase())) return false
     }
 
-    // 5. Multi-Select Level
     if (filterLevel.value.length > 0) {
       const lvl = getPropertyValueByAliases(item, ['Level', 'LEVEL'])
       if (!filterLevel.value.some(sel => sel.toLowerCase() === lvl.toLowerCase())) return false
     }
 
-    // 6. Multi-Select Cost Center
     if (filterCostCenter.value.length > 0) {
       const cc = getPropertyValueByAliases(item, ['Cost Center', 'COST CENTER', 'CostCenter'])
       if (!filterCostCenter.value.some(sel => sel.toLowerCase() === cc.toLowerCase())) return false
@@ -697,14 +674,12 @@ const filteredKaryawanList = computed(() => {
     const joinDateStr = getPropertyValueByAliases(item, ['Join Date', 'JOIN DATE', 'Tanggal Masuk'])
     const dateObj = parseDateObj(joinDateStr)
 
-    // 7. Multi-Select Bulan
     if (filterBulan.value.length > 0) {
       if (!dateObj) return false
       const blnName = monthNames[dateObj.getMonth()]
       if (!filterBulan.value.includes(blnName)) return false
     }
 
-    // 8. Multi-Select Tahun
     if (filterTahun.value.length > 0) {
       if (!dateObj) return false
       if (!filterTahun.value.includes(String(dateObj.getFullYear()))) return false
@@ -746,8 +721,8 @@ const getChartData = (columnName: string): ChartData<'bar' | 'pie'> => {
   const isUsiaRange = colLower.includes('umur') || colLower.includes('usia')
   const isMasaBaktiRange = colLower.includes('masabakti') || colLower.includes('masa bakti')
 
-  const ageOrder = ['15-24 Tahun', '25-40 Tahun', '41-59 Tahun', '60-64 Tahun', '> 64 Tahun', 'Tidak Terdata']
-  const masaBaktiOrder = ['< 1-2 Tahun', '3-5 Tahun', '6-10< Tahun', 'Tidak Terdata']
+  const ageOrder = ['18-24 Tahun', '25-40 Tahun', '41-59 Tahun', '> 60 Tahun', 'Tidak Terdata']
+  const masaBaktiOrder = ['0-2 Tahun', '3-5 Tahun', '6-10 Tahun', '> 10 Tahun', 'Tidak Terdata']
 
   const sortedKeys = Object.keys(counts).sort((a, b) => {
     if (isEducation) {
@@ -1100,13 +1075,13 @@ const getSummaryStats = (columnName: string) => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
+/* Header Chart Rata Kiri */
 .chart-card-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
   margin-bottom: 16px;
-  flex-wrap: wrap;
-  gap: 8px;
 }
 
 .chart-card-header h2 {
@@ -1175,11 +1150,6 @@ const getSummaryStats = (columnName: string) => {
 
   .chart-card {
     padding: 16px;
-  }
-
-  .chart-card-header {
-    flex-direction: column;
-    align-items: flex-start;
   }
 }
 </style>

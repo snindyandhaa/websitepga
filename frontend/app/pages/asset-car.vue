@@ -1,12 +1,15 @@
 <template>
   <div class="page-wrapper">
+    <!-- Navbar Header (3 Dropdown Utama) -->
     <header class="navbar">
       <div class="brand">
         <NuxtLink to="/home">
           <img src="/logo.png" alt="Logo" class="nav-logo" />
         </NuxtLink>
       </div>
+
       <nav class="nav-menu">
+        <!-- 1. Data MP -->
         <div class="dropdown">
           <button class="dropdown-btn">Data MP ▾</button>
           <div class="dropdown-content">
@@ -15,6 +18,8 @@
             <NuxtLink to="/employee-rotation">Employee Rotation</NuxtLink>
           </div>
         </div>
+
+        <!-- 2. General Affair Asset -->
         <div class="dropdown">
           <button class="dropdown-btn">General Affair Asset ▾</button>
           <div class="dropdown-content">
@@ -22,31 +27,24 @@
             <NuxtLink to="/asset-pga">Asset PGA</NuxtLink>
           </div>
         </div>
-        <div class="dropdown">
-          <button class="dropdown-btn">Asuransi ▾</button>
-          <div class="dropdown-content">
-            <NuxtLink to="/reliance">Reliance</NuxtLink>
-            <NuxtLink to="/bpjs">BPJS</NuxtLink>
-          </div>
-        </div>
-        <div class="dropdown">
-          <button class="dropdown-btn">Recruitment ▾</button>
-          <div class="dropdown-content">
-            <NuxtLink to="/data-summary">Data Summary</NuxtLink>
-          </div>
-        </div>
+
+        <!-- 3. More -->
         <div class="dropdown">
           <button class="dropdown-btn">More ▾</button>
           <div class="dropdown-content">
-            <NuxtLink to="/wip-hcga">Work In Progress HC & GA</NuxtLink>
-            <NuxtLink to="/budget-department">Budget Department</NuxtLink>
+            <NuxtLink to="/data-summary">Data Summary</NuxtLink>
+            <NuxtLink to="/bpjs">BPJS</NuxtLink>
           </div>
         </div>
       </nav>
     </header>
+
+    <!-- Banner Header -->
     <div class="hero-banner-container">
       <img src="/foto-karyawan.png" alt="Pabrik Header" class="hero-banner-img" />
     </div>
+
+    <!-- Main Content Area -->
     <main class="content-container">
       <div class="filter-card">
         <div class="search-bar-row">
@@ -73,6 +71,7 @@
           </div>
         </div>
       </div>
+
       <div v-if="loading" class="table-card">
         <div class="status-msg">
           Memuat data Asset Car dari Google Sheets...
@@ -85,6 +84,7 @@
       </div>
 
       <template v-else>
+        <!-- TAMPILAN 1: DATA TABEL -->
         <div v-if="viewMode === 'data'" class="table-card">
           <table class="main-table">
             <thead>
@@ -145,7 +145,7 @@
           <button class="btn-close-x" @click="closeModal">&times;</button>
         </div>
 
-        <div class="modal-body-grid" v-if="selectedAsset">
+        <div v-if="selectedAsset" class="modal-body-grid">
           <div class="info-card">
             <span class="info-label">LICENSE NO</span>
             <span class="info-value">{{ getVal(selectedAsset, ['LICENSE NO', 'License No', 'LICENSE', 'No Polisi']) }}</span>
