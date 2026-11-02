@@ -214,7 +214,7 @@ const errorMessage = ref<string>('')
 const showContractNotifModal = ref<boolean>(true)
 const contractNotifications = ref<any[]>([])
 
-// Struktur 10 Field Kiri (Ditambahkan BPJS Ketenagakerjaan)
+// Struktur 10 Field Kiri
 const leftDetailFields = [
   { label: 'Nama', keys: ['Nama', 'NAMA', 'Name', 'name'] },
   { label: 'KTP', keys: ['KTP', 'ktp', 'No KTP'] },
@@ -228,7 +228,7 @@ const leftDetailFields = [
   { label: 'BPJS Ketenagakerjaan', keys: ['BPJS KETENAGAKERJAAN', 'Bpjs Ketenagakerjaan', 'BPJS KETENAGAKERJAAN ', 'NO BPJS KETENAGAKERJAAN', 'BPJS TK'] }
 ]
 
-// Struktur 10 Field Kanan (Ditambahkan BPJS Kesehatan)
+// Struktur 10 Field Kanan (Menambahkan Last Promotion)
 const rightDetailFields = [
   { label: 'NIK', keys: ['NIK', 'NIP', 'Pers No', 'No ID', 'nik'] },
   { label: 'Company', keys: ['Company', 'COMPANY', 'Perusahaan'] },
@@ -237,7 +237,7 @@ const rightDetailFields = [
   { label: 'Position', keys: ['Position', 'POSITION', 'Jabatan'] },
   { label: 'Cost Center', keys: ['Cost Center', 'COST CENTER', 'CostCenter'] },
   { label: 'Join Date', keys: ['Join Date', 'JOIN DATE', 'Tanggal Masuk', 'Tgl Masuk'] },
-  { label: 'Masa Bakti', keys: ['Masa Bakti', 'MASA BAKTI', 'Masa Kerja'] },
+  { label: 'Last Promotion', keys: ['Last Promotion', 'LAST PROMOTION', 'Promosi Terakhir', 'Tgl Promosi', 'Tanggal Promosi'] },
   { label: 'BPJS Kesehatan', keys: ['NO BPJS KESEHATAN', 'No BPJS Kesehatan', 'BPJS Kesehatan', 'BPJS KES', 'NO BPJS'] },
   { label: 'Status', keys: ['Status', 'STATUS', 'Status Karyawan'] }
 ]
