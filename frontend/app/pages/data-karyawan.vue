@@ -182,7 +182,7 @@
             </div>
           </div>
 
-          <!-- Sisi Kanan (10 Field) -->
+          <!-- Sisi Kanan (11 Field) -->
           <div class="modal-col">
             <div v-for="field in rightDetailFields" :key="field.label" class="info-card">
               <span class="info-label">{{ field.label.toUpperCase() }}</span>
@@ -228,13 +228,14 @@ const leftDetailFields = [
   { label: 'BPJS Ketenagakerjaan', keys: ['BPJS KETENAGAKERJAAN', 'Bpjs Ketenagakerjaan', 'BPJS KETENAGAKERJAAN ', 'NO BPJS KETENAGAKERJAAN', 'BPJS TK'] }
 ]
 
-// Struktur 10 Field Kanan (Menambahkan Last Promotion)
+// Struktur 11 Field Kanan (Menambahkan Work Location & Last Promotion)
 const rightDetailFields = [
   { label: 'NIK', keys: ['NIK', 'NIP', 'Pers No', 'No ID', 'nik'] },
   { label: 'Company', keys: ['Company', 'COMPANY', 'Perusahaan'] },
   { label: 'Divisi', keys: ['Divisi', 'DIVISI', 'Division'] },
   { label: 'Department', keys: ['DEPARTMENT', 'Department', 'Departement', 'DEPARTEMENT', 'Dept'] },
   { label: 'Position', keys: ['Position', 'POSITION', 'Jabatan'] },
+  { label: 'Work Location', keys: ['Work Location', 'WORK LOCATION', 'WorkLocation', 'Lokasi Kerja', 'Lokasi'] },
   { label: 'Cost Center', keys: ['Cost Center', 'COST CENTER', 'CostCenter'] },
   { label: 'Join Date', keys: ['Join Date', 'JOIN DATE', 'Tanggal Masuk', 'Tgl Masuk'] },
   { label: 'Last Promotion', keys: ['Last Promotion', 'LAST PROMOTION', 'Promosi Terakhir', 'Tgl Promosi', 'Tanggal Promosi'] },
