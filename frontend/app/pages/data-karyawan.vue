@@ -469,7 +469,6 @@ const closeModal = (): void => {
   box-sizing: border-box;
 }
 
-/* Modal Popup Notifikasi Kontrak Karyawan */
 .notification-overlay {
   position: fixed;
   inset: 0;
